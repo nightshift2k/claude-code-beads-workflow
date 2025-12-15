@@ -55,19 +55,29 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### Proper Issue Creation Template
 
+**IMPORTANT:** Do NOT specify a custom ID or prefix when creating issues. Beads automatically generates IDs using the project directory name as the prefix. Specifying a custom prefix will cause a "prefix mismatch" error.
+
 ```bash
+# CORRECT - let Beads generate the ID automatically
 bd $BD_FLAGS create "[Task from plan]" \
   --description="[Context from implementation plan] - From [path/to/implementation/plan.md]" \
   -t [task|epic|bug|feature] \
   -p [priority] \
-  --deps discovered-from:[feature-epic] \
   --json
+
+# WRONG - do NOT specify custom IDs or prefixes
+bd create "my-prefix-123" ...  # This will fail with prefix mismatch
+```
+
+For child issues under an epic, use the `--parent` flag with the epic's auto-generated ID:
+```bash
+bd $BD_FLAGS create "[Child task]" --parent [epic-id] -t task -p 2 --json
 ```
 
 ### Mapping Guidelines
 
-- Implementation plan → Beads epic (e.g., bd-a1b2)
-- Plan tasks → Beads child issues (e.g., bd-a1b2.1, bd-a1b2.2)
+- Implementation plan → Beads epic (auto-generated ID like `project-name-abc`)
+- Plan tasks → Beads child issues (auto-generated like `project-name-abc.1`, `project-name-abc.2`)
 - See [001-project-principles.md](../.claude/rules/001-project-principles.md#priority_system) for priority guidelines
 - Default to Priority 2 (Medium) for most tasks
 
