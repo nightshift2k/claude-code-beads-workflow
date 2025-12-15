@@ -9,8 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - `004-beads-json-patterns.md` - Centralized Beads CLI jq array handling patterns
 - `005-agent-dispatch.md` - Centralized agent dispatch rules and patterns
+- `006-git-conventions.md` - Centralized git commit conventions with Beads integration
 - Agent dispatch requirement in `/workflow-work` - specialized agents now required for implementation
 - Hierarchical issue ID documentation with `--parent --force` pattern
+- **Checkpoint step in `/workflow-work`** - explicit "one task per invocation" rule with mandatory commit
 
 ### Changed
 - All internal file references now use `@path/to/file` syntax for Claude Code to read them

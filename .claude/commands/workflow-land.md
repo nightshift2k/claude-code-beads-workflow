@@ -63,10 +63,16 @@ bd $BD_FLAGS update [issue-id] --note "[progress update]" --json
 bd $BD_FLAGS sync --flush-only
 ```
 
-**6. Commit locally if needed**: Optionally commit changes to local git for history
+**6. Commit locally**: Commit Beads state and any uncommitted work
 ```bash
-git add . && git commit -m "Workflow sync: [description of work completed]"
+# Workflow sync commit (Beads state)
+git add .beads/issues.jsonl && git commit -m "chore(workflow): sync Beads state"
+
+# Or if code changes exist, include them with proper message format
+git add . && git commit -m "chore(workflow): sync session - [summary]"
 ```
+
+See @.claude/rules/006-git-conventions.md for commit message format.
 
 **7. Choose next work item**: Use `bd ready` to identify next available work
 ```bash
@@ -80,7 +86,7 @@ bd $BD_FLAGS ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 - The session is NOT completed until changes are persisted to JSONL
 - In sandbox mode, use `bd sync --flush-only` to export changes
 - In normal mode, changes auto-persist after each operation
-- Local git commits are optional for maintaining history
+- **Commit Beads state** to preserve tracking across sessions
 - If interrupted, cleanup trap will save state and attempt sync
 
 ### Troubleshooting

@@ -68,7 +68,8 @@ your-project/
 │       ├── 002-open-questions-template.md
 │       ├── 003-multi-agent-coordination.md
 │       ├── 004-beads-json-patterns.md
-│       └── 005-agent-dispatch.md
+│       ├── 005-agent-dispatch.md
+│       └── 006-git-conventions.md
 ├── docs/
 │   └── plans/              # Design documents and implementation plans
 ├── CLAUDE.md               # Main workflow instructions

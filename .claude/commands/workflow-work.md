@@ -53,6 +53,28 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
    - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
    - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
 
+<checkpoint_critical>
+**6. Checkpoint (CRITICAL)**: After task completion, STOP and return control to human
+
+```bash
+# 1. Commit changes (REQUIRED before closing)
+git add .
+git commit -m "type(scope): [issue-id] description"
+
+# 2. Close the issue
+bd $BD_FLAGS close [issue-id] --reason "Completed: [summary]" --json
+
+# 3. STOP HERE - Do NOT continue to next task
+```
+
+**⚠️ ONE TASK PER INVOCATION**
+- Human must run `/workflow-work` again for next task
+- Or run `/workflow-land` to complete session
+- Never automatically chain to next task
+
+See @.claude/rules/006-git-conventions.md for commit message format.
+</checkpoint_critical>
+
 ---
 
 ### Before Using This Command
@@ -73,7 +95,7 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
 - Create Beads issues for any discovered problems or tasks
 - Keep issue descriptions detailed for future context
 - Use appropriate priorities based on project guidelines
-- Make regular git commits with references to issue IDs in commit messages
+- Follow @.claude/rules/006-git-conventions.md for all commits
 
 ### Troubleshooting
 
