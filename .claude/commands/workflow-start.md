@@ -59,16 +59,10 @@ echo ""
 echo "IMPORTANT: Save this epic ID for /workflow-track"
 ```
 
-**2. Verify Prefix**: Check the prefix is appropriate
+**2. Verify Prefix** (if needed): If you didn't run `/workflow-init` first, verify the prefix is ≤8 characters by checking the issue ID format in the output above. If too long, run:
 ```bash
-# Verify prefix length
-PREFIX=$(bd info --json 2>/dev/null | jq -r '.config.issue_prefix // empty')
-if [ ${#PREFIX} -gt 8 ]; then
-  echo ""
-  echo "WARNING: Issue prefix '$PREFIX' exceeds 8 characters."
-  echo "Consider running: bd rename-prefix <short>-"
-  echo "Short prefixes create cleaner issue IDs."
-fi
+bd rename-prefix <short>- --dry-run   # Preview
+bd rename-prefix <short>-             # Apply
 ```
 
 **3. Context Linking**: Optionally link to any planning documents or specifications
