@@ -40,20 +40,23 @@ echo ""
 ### Process
 
 **1. Epic Creation**: Create a feature epic in Beads
-```bash
-# Create epic and capture the ID
-EPIC_OUTPUT=$(bd $BD_FLAGS create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json)
-echo "$EPIC_OUTPUT"
 
-# Extract epic ID for use in /workflow-track
-EPIC_ID=$(echo "$EPIC_OUTPUT" | jq -r '.id')
+**Step 1a:** Create the epic (run this first):
+```bash
+bd $BD_FLAGS create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json
+```
+
+**Step 1b:** Extract the epic ID from the JSON output above (remember: Beads returns arrays):
+```bash
+# The output is an array like [{"id": "pydo-abc", ...}]
+# Use .[0].id to get the first element's id
+EPIC_ID="<paste-id-from-output>"
 echo ""
 echo "=========================================="
 echo "EPIC CREATED: $EPIC_ID"
 echo "=========================================="
 echo ""
 echo "IMPORTANT: Save this epic ID for /workflow-track"
-echo "You will need it to create child issues with hierarchical IDs"
 ```
 
 **2. Verify Prefix**: Check the prefix is appropriate
