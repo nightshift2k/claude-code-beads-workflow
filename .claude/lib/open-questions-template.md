@@ -1,22 +1,11 @@
+<!-- TEMPLATE FILE - DELETE THIS BLOCK WHEN COPYING -->
 <!--
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  TEMPLATE FILE - Do not edit directly!                                       ║
-║                                                                              ║
-║  This is a TEMPLATE for creating your project's open questions document.     ║
-║                                                                              ║
-║  TO USE THIS TEMPLATE:                                                       ║
-║  1. Copy this file to your preferred location:                               ║
-║     cp .claude/lib/open-questions-template.md docs/open-questions.md         ║
-║                                                                              ║
-║  2. DELETE THIS ENTIRE HEADER BLOCK (lines 1-18) from your copy              ║
-║                                                                              ║
-║  3. Use with the workflow command:                                           ║
-║     /workflow-questions docs/open-questions.md                               ║
-║                                                                              ║
-║  The .claude/lib/ directory is for STATIC templates only.                    ║
-║  Your WORKING questions file should live in your project docs.               ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+To use this template:
+1. Copy to your project: cp .claude/lib/open-questions-template.md docs/open-questions.md
+2. Delete these comment lines (lines 1-5)
+3. Use with: /workflow-questions docs/open-questions.md
 -->
+<!-- END TEMPLATE BLOCK -->
 
 # Open Questions & Research Items
 
