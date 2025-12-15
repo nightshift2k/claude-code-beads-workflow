@@ -49,6 +49,45 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
    - Check issue description for links to specs or plans
    - Review project context in CLAUDE.md and project rules
 
+**5. Execute with Specialized Agent**: Dispatch appropriate agent for the task type
+   - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
+   - Dispatch the task to a specialized agent based on domain
+
+---
+
+### Agent Dispatch (REQUIRED)
+
+**ALWAYS dispatch implementation work to specialized agents.** Do not implement directly.
+
+| Task Domain | Agent | Use For |
+|-------------|-------|---------|
+| Python | `python-expert` | Python code, pytest, CLI tools |
+| Go | `golang-expert` | Go implementations, testing |
+| TypeScript/JS | `frontend-architect` | Frontend, React/Vue, Node.js |
+| API Design | `api-designer` | REST/GraphQL endpoints |
+| DevOps | `devops-architect` | CI/CD, infrastructure |
+| Security | `security-engineer` | Auth, validation, vulnerabilities |
+
+**Dispatch pattern:**
+```
+Use the Task tool to dispatch to [agent-type] agent:
+
+"Implement the following task from Beads issue [issue-id]:
+
+[Paste full issue description from bd show output]
+
+Follow TDD: write test first, run to fail, implement, run to pass.
+Update Beads status when complete."
+```
+
+<agent_dispatch_warning>
+**CRITICAL:** Never implement code directly in the main conversation. Always dispatch to the appropriate specialized agent. This ensures:
+- Domain expertise applied to implementation
+- Consistent code quality
+- Proper testing practices
+- Clean separation of concerns
+</agent_dispatch_warning>
+
 ---
 
 ### Before Using This Command
