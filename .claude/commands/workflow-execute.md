@@ -93,29 +93,11 @@ Additional instructions for execution:
 
 ---
 
-### Sub-Agents
+### Agent Dispatch
 
-The executing-plans skill may dispatch sub-agents for specialized tasks:
+**⚠️ Agent Dispatch:** Never implement code directly. See [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md) for agent selection and dispatch patterns.
 
-| Language/Domain | Agent | Use For |
-|-----------------|-------|---------|
-| Python | `python-expert` | Python implementation, pytest |
-| Go | `golang-expert` | Go implementation, testing |
-| TypeScript/JS | `frontend-architect` | Frontend code, React/Vue |
-| API Design | `api-designer` | REST/GraphQL endpoints |
-| DevOps | `devops-architect` | CI/CD, infrastructure |
-| Security | `security-engineer` | Auth, validation, vulnerabilities |
-
-<sub_agent_warning>
-**CRITICAL: Sub-Agent Coordination**
-
-When using sub-agents during plan execution:
-- **Sequential only** - never dispatch multiple sub-agents to the same file
-- Sub-agents must complete before the next begins on shared files
-- See [Multi-Agent Coordination Rules](../.claude/rules/003-multi-agent-coordination.md#critical_rule)
-
-The executing-plans skill handles this automatically when given proper task dependencies.
-</sub_agent_warning>
+For multi-agent coordination rules (sequential execution, file locking), see [Multi-Agent Coordination](../.claude/rules/003-multi-agent-coordination.md).
 
 ---
 
