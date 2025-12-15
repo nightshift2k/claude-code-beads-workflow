@@ -263,7 +263,8 @@ claude
 ```bash
 # Verify .beads directory was created
 ls -la .beads/
-# Expected: issues.jsonl, README.md, etc.
+# Expected: beads.db, config.yaml, metadata.json, README.md, .gitignore
+# Note: issues.jsonl is created later when issues are added
 ```
 
 ### 4.2 Create Feature Epic
