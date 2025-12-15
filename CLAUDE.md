@@ -264,7 +264,7 @@ This eliminates the need to re-read large implementation plans for each task.
 
 ### Use Appropriate Priorities
 
-See [Project Principles - Priority Assignment](.claude/rules/001-project-principles.md#priority_system) for the priority system.
+See @.claude/rules/001-project-principles.md for the priority system.
 
 Quick reference: P0=Critical, P1=High, P2=Medium (default), P3=Low, P4=Backlog
 

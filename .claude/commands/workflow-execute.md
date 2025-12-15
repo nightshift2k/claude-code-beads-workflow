@@ -120,7 +120,7 @@ For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordinat
 If execution encounters issues:
 - Use `bd $BD_FLAGS list --status in_progress` to see current work state
 - Check `bd $BD_FLAGS blocked` for dependency issues
-- See [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions
+- See @CLAUDE.md for troubleshooting solutions
 
 **Example usage:**
 ```

@@ -79,7 +79,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
 
 ### Troubleshooting
 
-If question tracking fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
+If question tracking fails, see @CLAUDE.md for troubleshooting solutions.
 
 **Example usage:**
 ```

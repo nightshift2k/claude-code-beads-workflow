@@ -89,7 +89,7 @@ bd $BD_FLAGS list --status open
 bd $BD_FLAGS stale --days 7
 ```
 
-See [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for more solutions.
+See @CLAUDE.md for troubleshooting solutions.
 
 **Example usage:**
 ```

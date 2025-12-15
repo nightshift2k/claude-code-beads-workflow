@@ -75,7 +75,7 @@ bd $BD_FLAGS ready --json
 
 ### Troubleshooting
 
-If you encounter errors, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
+If you encounter errors, see @CLAUDE.md for troubleshooting solutions.
 
 **Example usage:**
 ```

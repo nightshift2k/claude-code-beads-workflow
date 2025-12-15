@@ -76,7 +76,7 @@ bd $BD_FLAGS stats --json
 
 ### Troubleshooting
 
-If status retrieval fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
+If status retrieval fails, see @CLAUDE.md for troubleshooting solutions.
 
 **Example usage:**
 ```

@@ -207,7 +207,7 @@ When initializing a new project, choose a prefix that is:
 If initialization fails:
 1. Check `bd version` works
 2. Verify write permissions to project directory
-3. See [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting)
+3. See @CLAUDE.md for troubleshooting
 
 **If prefix is too long:**
 ```bash

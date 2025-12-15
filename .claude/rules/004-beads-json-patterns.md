@@ -62,4 +62,4 @@ bd create "Task" --parent $EPIC_ID --force -t task --json
 - Lowercase letters, numbers, hyphens only
 - Must start with letter, end with hyphen
 
-See [CLAUDE.md](../../CLAUDE.md#beads-issue-id-guidelines) for full prefix guidelines.
+See @CLAUDE.md for full prefix guidelines.

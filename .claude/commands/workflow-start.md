@@ -136,7 +136,7 @@ For features touching more than 3 files, consider using the brainstorming skill 
 
 ### Troubleshooting
 
-If epic creation fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
+If epic creation fails, see @CLAUDE.md for troubleshooting solutions.
 
 **If prefix is too long:**
 ```bash

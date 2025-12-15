@@ -207,7 +207,7 @@ bd list --json | jq '.[] | select(.id | contains("."))'
 
 ### Troubleshooting
 
-If issue creation fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
+If issue creation fails, see @CLAUDE.md for troubleshooting solutions.
 
 **Common issues:**
 | Error | Cause | Solution |

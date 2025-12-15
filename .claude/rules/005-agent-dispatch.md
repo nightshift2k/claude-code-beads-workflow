@@ -46,7 +46,7 @@ Requirements:
 When tasks require multiple agents:
 - **Sequential only** - never dispatch multiple agents to the same file
 - Complete one agent's work before starting the next on shared files
-- See [Multi-Agent Coordination](003-multi-agent-coordination.md) for detailed rules
+- See @.claude/rules/003-multi-agent-coordination.md for detailed rules
 
 ## When NOT to Dispatch
 
