@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- `004-beads-json-patterns.md` - Centralized Beads CLI jq array handling patterns
+- `005-agent-dispatch.md` - Centralized agent dispatch rules and patterns
+- Agent dispatch requirement in `/workflow-work` - specialized agents now required for implementation
+- Hierarchical issue ID documentation with `--parent --force` pattern
+
+### Changed
+- All internal file references now use `@path/to/file` syntax for Claude Code to read them
+- DRY refactor: jq array warnings consolidated into single rules file
+- DRY refactor: agent dispatch tables consolidated into single rules file
+- Beads prefix enforcement: max 8 characters, validated during `/workflow-init`
+- `/workflow-track` now creates hierarchical child IDs (e.g., `epic.1`, `epic.2`)
+- `/workflow-start` emphasizes capturing epic ID for child issue creation
+
+### Fixed
+- jq "Cannot index array with string" errors - all `bd` commands return arrays `[{...}]`
+- `/workflow-health` bug using `.issues` instead of array directly
+- Missing `--force` flag with `--parent` causing "prefix mismatch" errors
+- Random task IDs instead of sequential hierarchical IDs
+
 ## [0.1.0] - 2025-12-15
 
 ### Added

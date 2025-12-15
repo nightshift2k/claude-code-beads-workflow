@@ -25,8 +25,8 @@ cd my-project
 go install github.com/steveyegge/beads/cmd/bd@latest
 # Or: brew install steveyegge/tap/beads
 
-# 3. Initialize Beads tracking
-bd init --quiet
+# 3. Initialize Beads tracking (use short prefix, max 8 chars)
+bd init -p myproj- --quiet
 
 # 4. Open in Claude Code and run
 /workflow-init
@@ -66,7 +66,9 @@ your-project/
 │   └── rules/              # Project rules and principles
 │       ├── 001-project-principles.md
 │       ├── 002-open-questions-template.md
-│       └── 003-multi-agent-coordination.md
+│       ├── 003-multi-agent-coordination.md
+│       ├── 004-beads-json-patterns.md
+│       └── 005-agent-dispatch.md
 ├── docs/
 │   └── plans/              # Design documents and implementation plans
 ├── CLAUDE.md               # Main workflow instructions
