@@ -214,10 +214,10 @@ Verify your directory structure:
 │   │   ├── workflow-questions.md
 │   │   └── workflow-health.md
 │   ├── lib/
-│   │   └── workflow-precheck.sh
+│   │   ├── workflow-precheck.sh
+│   │   └── open-questions-template.md
 │   └── rules/
 │       ├── 001-project-principles.md
-│       ├── 002-open-questions.md
 │       └── 003-multi-agent-coordination.md
 ├── docs/
 │   └── plans/

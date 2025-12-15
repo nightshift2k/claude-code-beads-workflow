@@ -92,10 +92,15 @@ Result: Current state of implementation work and tracking
 
 ### `/workflow-questions` - Track and resolve open questions
 ```
-Use this when: Need to record or address open questions
-Process: Add to .claude/rules/002-open-questions.md and create corresponding Beads issues
-Template: bd create "Research: [Question]" --description="See .claude/rules/002-open-questions.md#[ID]" -t task -p [priority] --json
+Usage: /workflow-questions [path/to/questions.md]
+Use this when: Need to record or address open questions systematically
+Process:
+  1. Create questions file from template: cp .claude/lib/open-questions-template.md docs/open-questions.md
+  2. Remove template header from your copy
+  3. Add questions to your file and create corresponding Beads issues
+Template: bd create "Research: [Question]" --description="See [questions-file]#[ID]" -t task -p [priority] --json
 Result: Questions are tracked and addressed systematically
+Note: Projects choose their own location for questions file (not in .claude/rules/)
 ```
 
 <workflow_principles>

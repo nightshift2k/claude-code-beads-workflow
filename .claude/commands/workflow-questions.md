@@ -1,5 +1,5 @@
 ---
-argument-hint:
+argument-hint: "[path/to/questions.md]"
 description: Track and resolve open questions systematically
 ---
 
@@ -8,6 +8,10 @@ description: Track and resolve open questions systematically
 Use this command when needing to record or address open questions.
 
 This command systematically tracks questions that need research or decisions.
+
+**Usage:** `/workflow-questions [path/to/questions.md]`
+
+Example: `/workflow-questions docs/open-questions.md`
 
 ### Environment Validation
 
@@ -21,9 +25,48 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ---
 
+### Validate Questions File Path
+
+```bash
+QUESTIONS_FILE="$1"
+
+if [ -z "$QUESTIONS_FILE" ]; then
+  echo "ERROR: Usage: /workflow-questions [path/to/questions.md]"
+  echo ""
+  echo "   Example: /workflow-questions docs/open-questions.md"
+  echo ""
+  echo "   To create a new questions file from template:"
+  echo "   cp @.claude/lib/open-questions-template.md docs/open-questions.md"
+  echo "   # Then remove the warning header block from your copy"
+  exit 1
+fi
+
+if [ ! -f "$QUESTIONS_FILE" ]; then
+  echo "ERROR: Questions file not found at: $QUESTIONS_FILE"
+  echo ""
+  echo "To create a new questions file from template:"
+  echo "   cp @.claude/lib/open-questions-template.md $QUESTIONS_FILE"
+  echo "   # Then remove the warning header block from your copy"
+  exit 1
+fi
+
+# Check if user forgot to remove the template warning header
+if grep -q "TEMPLATE FILE - Do not edit directly" "$QUESTIONS_FILE"; then
+  echo "WARNING: This appears to be the template file with the warning header still present."
+  echo ""
+  echo "Please remove the header block (lines 1-18) from $QUESTIONS_FILE before using."
+  echo "The header is surrounded by <!-- --> comment markers."
+  exit 1
+fi
+
+echo "Using questions file: $QUESTIONS_FILE"
+```
+
+---
+
 ### Process
 
-**1. Record Questions**: Add new questions to `@.claude/rules/002-open-questions.md` (the working file, not a template)
+**1. Record Questions**: Add new questions to your questions file
 
 **2. Create Tracking Issues**: Create corresponding Beads issues for research tasks
 
@@ -35,7 +78,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### For New Questions
 
-**Step 1:** Add to `@.claude/rules/002-open-questions.md` with template:
+**Step 1:** Add to your questions file with template:
 ```markdown
 ### [Question ID: QXXX]
 **Question**: [What is the specific question?]
@@ -49,7 +92,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 **Step 2:** Create Beads issue to track research:
 ```bash
 bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
-  --description="Research to resolve question in @.claude/rules/002-open-questions.md#QXXX. [Include specific research needs]" \
+  --description="Research to resolve question in $QUESTIONS_FILE#QXXX. [Include specific research needs]" \
   -t task -p [appropriate priority] \
   --json
 ```
@@ -61,7 +104,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
    ```bash
    bd $BD_FLAGS close [issue-id] --reason "Research complete: [summary]" --json
    ```
-3. Update `@.claude/rules/002-open-questions.md` with resolution
+3. Update `$QUESTIONS_FILE` with resolution
 4. Mark question status as "Resolved"
 
 ### Question Prioritization
@@ -72,7 +115,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
 
 ### Best Practices
 
-- Always link Beads issues to entries in `@.claude/rules/002-open-questions.md`
+- Always link Beads issues to entries in your questions file
 - Use `--deps discovered-from` to trace research back to original needs
 - Update question status when research is complete
 - Close Beads research issues when questions are answered
@@ -92,7 +135,7 @@ See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for 
 
 **Example usage:**
 ```
-/workflow-questions
+/workflow-questions docs/open-questions.md
 # This will guide you through the process of recording a new question or addressing existing ones
 ```
 

@@ -13,8 +13,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Agent dispatch requirement in `/workflow-work` - specialized agents now required for implementation
 - Hierarchical issue ID documentation with `--parent --force` pattern
 - **Checkpoint step in `/workflow-work`** - explicit "one task per invocation" rule with mandatory commit
+- `open-questions-template.md` in `.claude/lib/` - Template for creating project-specific questions tracking
 
 ### Changed
+- **BREAKING**: `/workflow-questions` now requires path parameter (e.g., `/workflow-questions docs/open-questions.md`)
+- Moved open questions template from `.claude/rules/002-open-questions.md` to `.claude/lib/open-questions-template.md`
+- Questions file location is now project-specific (not enforced in boilerplate)
+- Template includes prominent warning header that must be removed when creating working file
 - All internal file references now use `@path/to/file` syntax for Claude Code to read them
 - DRY refactor: jq array warnings consolidated into single rules file
 - DRY refactor: agent dispatch tables consolidated into single rules file
@@ -45,8 +50,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `/workflow-health` - Diagnose workflow issues
 - Project rules and principles:
   - `001-project-principles.md` - Core principles and priority system
-  - `002-open-questions.md` - Question tracking template
   - `003-multi-agent-coordination.md` - Multi-agent coordination guidelines
+- Template library:
+  - `open-questions-template.md` - Template for creating project-specific questions tracking
 - Environment precheck library (`workflow-precheck.sh`)
 - Comprehensive troubleshooting documentation
 - Validation test document with pydo CLI example project

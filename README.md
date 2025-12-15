@@ -62,10 +62,11 @@ bd init -p myproj- --quiet
 your-project/
 ├── .claude/
 │   ├── commands/           # 9 workflow slash commands
-│   ├── lib/                # Shared utilities (precheck.sh)
+│   ├── lib/                # Shared utilities and templates
+│   │   ├── workflow-precheck.sh
+│   │   └── open-questions-template.md
 │   └── rules/              # Project rules and principles
 │       ├── 001-project-principles.md
-│       ├── 002-open-questions.md
 │       ├── 003-multi-agent-coordination.md
 │       ├── 004-beads-json-patterns.md
 │       ├── 005-agent-dispatch.md
