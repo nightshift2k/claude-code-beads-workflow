@@ -22,7 +22,7 @@ This command converts your implementation plan tasks into **self-contained** Bea
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-track"
 ```
 
@@ -58,7 +58,7 @@ bd show $EPIC_ID --json
 
 ### Critical: Hierarchical IDs with `--parent --force`
 
-<hierarchical_ids>
+<hierarchical_ids_critical>
 **WHY `--parent`:** Creates child issues with sequential dotted IDs:
 - Epic: `pydo-abc`
 - Child 1: `pydo-abc.1`
@@ -71,7 +71,7 @@ bd show $EPIC_ID --json
 - Epic: `pydo-abc`
 - Task 1: `pydo-xyz` (no relationship visible in ID)
 - Task 2: `pydo-def` (no relationship visible in ID)
-</hierarchical_ids>
+</hierarchical_ids_critical>
 
 **ALWAYS use both flags together:**
 ```bash

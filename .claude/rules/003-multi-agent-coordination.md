@@ -182,13 +182,13 @@ Rationale:
 1. **In Beads issues**: Use `--note` to add decision context
 2. **In design documents**: `docs/plans/` for architectural decisions
 3. **In code comments**: Only for non-obvious implementation choices
-4. **In CLAUDE.md**: For project-wide patterns and conventions
+4. **In @CLAUDE.md**: For project-wide patterns and conventions
 
 ## Gotchas-First Research Pattern
 
 Before implementing against external APIs or unfamiliar systems:
 
-1. **Check existing gotchas**: Review CLAUDE.md and project docs
+1. **Check existing gotchas**: Review @CLAUDE.md and project docs
 2. **Explore before implementing**: Use exploratory queries/calls
 3. **Document discoveries**: Add new gotchas immediately
 4. **Update for future sessions**: Ensure context persists
@@ -208,7 +208,7 @@ Before implementing against external APIs or unfamiliar systems:
 ```
 ```
 
-<brainstorming_gate>
+<brainstorming_gate_critical>
 ## Brainstorming Gate
 
 ### When to Require Brainstorming
@@ -240,9 +240,9 @@ Before coding, ensure you have:
 # - Design document in docs/plans/
 # - Clear implementation path
 ```
-</brainstorming_gate>
+</brainstorming_gate_critical>
 
-<verification_rules>
+<verification_rules_critical>
 ## Verification Before Completion
 
 ### Mandatory Checks
@@ -257,7 +257,7 @@ Before marking any task complete:
 ### Never Skip Verification
 
 "I think it works" is not verification. Run the actual commands and confirm output before claiming completion.
-</verification_rules>
+</verification_rules_critical>
 
 ## Summary of Multi-Agent Rules
 
@@ -269,3 +269,14 @@ Before marking any task complete:
 | Brainstorming gate | Brainstorm before >3 file features | HIGH |
 | Gotchas-first | Research before implementing | HIGH |
 | Verification | Run tests before completion | CRITICAL |
+
+---
+
+## Related Files
+
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/001-project-principles.md - Project principles and quality gates
+- @.claude/rules/005-agent-dispatch.md - Agent selection and dispatch patterns
+- @.claude/rules/006-git-conventions.md - Commit timing and conventions
+- @.claude/commands/workflow-work.md - Task execution workflow
+- @.claude/commands/workflow-land.md - Session completion workflow

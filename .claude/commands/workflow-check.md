@@ -13,7 +13,7 @@ This command provides a comprehensive view of implementation status and tracking
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-check"
 ```
 
@@ -76,7 +76,19 @@ bd $BD_FLAGS stats --json
 
 ### Troubleshooting
 
-If status retrieval fails, see @CLAUDE.md for troubleshooting solutions.
+**If status retrieval fails:**
+```bash
+# Check Beads database health
+bd info --json
+
+# Verify database file exists
+ls -la .beads/beads.db
+
+# Try basic list command
+bd list --limit 5 --json
+```
+
+See @CLAUDE.md for comprehensive troubleshooting solutions.
 
 **Example usage:**
 ```

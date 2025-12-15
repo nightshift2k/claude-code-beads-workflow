@@ -13,7 +13,7 @@ This command ensures proper session completion with all work tracked and locally
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-land"
 ```
 
@@ -91,7 +91,19 @@ bd $BD_FLAGS ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 
 ### Troubleshooting
 
-If you encounter errors, see @CLAUDE.md for troubleshooting solutions.
+**If sync fails in sandbox mode:**
+```bash
+# Check if .beads directory exists
+ls -la .beads/
+
+# Verify JSONL file is writable
+test -w .beads/issues.jsonl && echo "Writable" || echo "Not writable"
+
+# Manual export if needed
+bd $BD_FLAGS export > .beads/issues.jsonl.backup
+```
+
+See @CLAUDE.md for comprehensive troubleshooting solutions.
 
 **Example usage:**
 ```

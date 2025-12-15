@@ -13,7 +13,7 @@ This command helps you find and properly claim work from the Beads issue trackin
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-work"
 ```
 
@@ -47,13 +47,13 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
 
 **4. Context Setup**: Review any related documentation or specifications
    - Check issue description for links to specs or plans
-   - Review project context in CLAUDE.md and project rules
+   - Review project context in @CLAUDE.md and project rules
 
 **5. Execute with Specialized Agent**: Dispatch to appropriate agent
    - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
    - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
 
-<checkpoint_critical>
+<task_checkpoint_critical>
 **6. Checkpoint (CRITICAL)**: After task completion, STOP and return control to human
 
 ```bash
@@ -73,7 +73,7 @@ bd $BD_FLAGS close [issue-id] --reason "Completed: [summary]" --json
 - Never automatically chain to next task
 
 See @.claude/rules/006-git-conventions.md for commit message format.
-</checkpoint_critical>
+</task_checkpoint_critical>
 
 ---
 

@@ -135,10 +135,10 @@ echo "   -------------"
 
 # Check required files
 FILES=(
-  "CLAUDE.md:Project instructions"
-  ".claude/rules/001-project-principles.md:Project principles"
-  ".claude/rules/003-multi-agent-coordination.md:Multi-agent rules"
-  ".claude/lib/workflow-precheck.sh:Precheck library"
+  "@CLAUDE.md:Project instructions"
+  "@.claude/rules/001-project-principles.md:Project principles"
+  "@.claude/rules/003-multi-agent-coordination.md:Multi-agent rules"
+  "@.claude/lib/workflow-precheck.sh:Precheck library"
 )
 
 for entry in "${FILES[@]}"; do
@@ -200,7 +200,7 @@ if [ ! -d ".beads" ]; then
   ISSUES="$ISSUES\n- Beads not initialized"
 fi
 
-if [ ! -f ".claude/lib/workflow-precheck.sh" ]; then
+if [ ! -f "@.claude/lib/workflow-precheck.sh" ]; then
   if [ "$HEALTH" != "CRITICAL" ]; then
     HEALTH="DEGRADED"
   fi
@@ -241,7 +241,7 @@ fi
 |-------|--------|
 | bd CLI missing | Install Beads CLI |
 | .beads not initialized | Run `/workflow-init` |
-| Database corrupted | See recovery procedures in CLAUDE.md |
+| Database corrupted | See recovery procedures in @CLAUDE.md |
 | Stale issues | Review with `bd stale` |
 | Blocked issues | Review dependencies with `bd blocked` |
 

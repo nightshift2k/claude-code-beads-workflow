@@ -84,7 +84,15 @@ Each open research question should have a corresponding Beads issue:
 Example Beads creation:
 ```bash
 bd create "Research: Q001 - Database scaling approach" \
-  --description="Research different approaches for database scaling. See .claude/rules/002-open-questions-template.md#Q001" \
+  --description="Research different approaches for database scaling. See @.claude/rules/002-open-questions-template.md#Q001" \
   -t task -p 1 \
   --json
 ```
+
+---
+
+## Related Files
+
+- @CLAUDE.md - Main workflow instructions
+- @.claude/commands/workflow-questions.md - Question tracking workflow
+- @.claude/rules/001-project-principles.md - Priority system

@@ -57,3 +57,12 @@ Some tasks don't require specialized agents:
 - Quick documentation lookups
 
 **Rule of thumb:** If the task involves writing or modifying code, dispatch to an agent.
+
+---
+
+## Related Files
+
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/003-multi-agent-coordination.md - Multi-agent coordination rules
+- @.claude/commands/workflow-work.md - Task execution workflow
+- @.claude/commands/workflow-execute.md - Plan execution workflow

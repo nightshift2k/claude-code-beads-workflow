@@ -13,7 +13,7 @@ This command creates a Beads epic to track the entire feature lifecycle.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-start"
 ```
 
@@ -84,7 +84,7 @@ fi
 - Proper tracking hierarchy for the entire feature
 - Foundation for breaking down work into child issues with `.1`, `.2` suffixes
 
-<important_output>
+<epic_output_critical>
 **CRITICAL: Note the epic ID in the output!**
 
 The epic ID (e.g., `pydo-abc`) is required for `/workflow-track` to create
@@ -108,7 +108,7 @@ IMPORTANT: Save this epic ID for /workflow-track
 Use this ID when running `/workflow-track`:
 - Pass to `--parent pydo-abc --force` for each child issue
 - Results in clean IDs: `pydo-abc.1`, `pydo-abc.2`, `pydo-abc.3`
-</important_output>
+</epic_output_critical>
 
 ---
 
@@ -136,7 +136,19 @@ For features touching more than 3 files, consider using the brainstorming skill 
 
 ### Troubleshooting
 
-If epic creation fails, see @CLAUDE.md for troubleshooting solutions.
+**If epic creation fails:**
+```bash
+# Verify Beads is initialized
+ls -la .beads/
+
+# Check Beads database status
+bd info --json | jq '.'
+
+# Test basic bd commands
+bd list --limit 1 --json
+```
+
+See @CLAUDE.md for comprehensive troubleshooting solutions.
 
 **If prefix is too long:**
 ```bash

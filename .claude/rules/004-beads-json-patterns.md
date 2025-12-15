@@ -63,3 +63,11 @@ bd create "Task" --parent $EPIC_ID --force -t task --json
 - Must start with letter, end with hyphen
 
 See @CLAUDE.md for full prefix guidelines.
+
+---
+
+## Related Files
+
+- @CLAUDE.md - Main workflow instructions and troubleshooting
+- @.claude/commands/workflow-track.md - Hierarchical ID usage examples
+- @.claude/commands/workflow-init.md - Prefix initialization

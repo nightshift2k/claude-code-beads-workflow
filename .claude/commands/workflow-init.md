@@ -9,12 +9,18 @@ Use this command to set up a new project for agentic development workflow with B
 
 This command validates the environment and initializes all required components.
 
-### Process
+### Environment Validation
 
-**1. Validate Environment**: Check all prerequisites
+**FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
+workflow_precheck "workflow-init"
+```
 
+If precheck fails, follow the guidance to resolve environment issues before continuing.
+
+Additional validation checks:
+```bash
 echo "Checking workflow prerequisites..."
 echo ""
 
@@ -40,9 +46,13 @@ fi
 echo "git: $(git --version | cut -d' ' -f3)"
 ```
 
-**2. Determine Issue Prefix**: Select a short, meaningful prefix
+---
 
-<prefix_rules>
+### Process
+
+1. Determine Issue Prefix: Select a short, meaningful prefix
+
+<prefix_rules_critical>
 **CRITICAL: Beads prefix requirements:**
 - **Maximum 8 characters** (including trailing hyphen)
 - Must end with a hyphen (e.g., `pydo-`, `auth-`, `api-`)
@@ -51,7 +61,7 @@ echo "git: $(git --version | cut -d' ' -f3)"
 
 **Good prefixes:** `pydo-`, `auth-`, `cli-`, `web-`, `api-`, `core-`
 **Bad prefixes:** `agentic-workflow-test-` (too long), `MyProject-` (uppercase)
-</prefix_rules>
+</prefix_rules_critical>
 
 ```bash
 # Derive short prefix from project name or ask user
@@ -73,7 +83,7 @@ echo ""
 echo "Using issue prefix: $PREFIX"
 ```
 
-**3. Initialize Beads**: Set up issue tracking with short prefix
+2. Initialize Beads: Set up issue tracking with short prefix
 ```bash
 if [ ! -d ".beads" ]; then
   echo ""
@@ -99,7 +109,7 @@ else
 fi
 ```
 
-**4. Verify Directory Structure**: Ensure required directories exist
+3. Verify Directory Structure: Ensure required directories exist
 ```bash
 echo ""
 echo "Verifying directory structure..."
@@ -118,15 +128,15 @@ mkdir -p docs/plans
 echo "docs/plans: OK"
 ```
 
-**5. Validate Configuration Files**: Check required files exist
+4. Validate Configuration Files: Check required files exist
 ```bash
 echo ""
 echo "Checking configuration files..."
 
 FILES=(
-  "CLAUDE.md"
-  ".claude/rules/001-project-principles.md"
-  ".claude/lib/workflow-precheck.sh"
+  "@CLAUDE.md"
+  "@.claude/rules/001-project-principles.md"
+  "@.claude/lib/workflow-precheck.sh"
 )
 
 for file in "${FILES[@]}"; do
@@ -138,7 +148,7 @@ for file in "${FILES[@]}"; do
 done
 ```
 
-**6. Summary**: Report initialization status
+5. Summary: Report initialization status
 ```bash
 echo ""
 echo "================================"
@@ -148,8 +158,8 @@ echo ""
 echo "Issue prefix: $PREFIX"
 echo ""
 echo "Next steps:"
-echo "1. Review CLAUDE.md for workflow instructions"
-echo "2. Read .claude/rules/ for project guidelines"
+echo "1. Review @CLAUDE.md for workflow instructions"
+echo "2. Read @.claude/rules/ for project guidelines"
 echo "3. Start a feature with: /workflow-start [description]"
 echo ""
 echo "Quick reference:"
@@ -204,10 +214,11 @@ When initializing a new project, choose a prefix that is:
 
 ### Troubleshooting
 
-If initialization fails:
+**If initialization fails:**
 1. Check `bd version` works
 2. Verify write permissions to project directory
-3. See @CLAUDE.md for troubleshooting
+3. Ensure git repository is initialized: `git init`
+4. See @CLAUDE.md for comprehensive troubleshooting solutions
 
 **If prefix is too long:**
 ```bash

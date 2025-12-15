@@ -13,7 +13,7 @@ This command acts as a wrapper for the executing-plans skill, ensuring proper tr
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-execute"
 ```
 
@@ -110,7 +110,7 @@ For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordinat
 
 - Ensure you have a completed implementation plan file (from writing-plans skill)
 - Verify Beads has been initialized with `bd init --quiet`
-- Confirm all project-specific rules in CLAUDE.md/AGENTS.md
+- Confirm all project-specific rules in @CLAUDE.md
 
 ### Execution Flow
 
@@ -122,10 +122,19 @@ For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordinat
 
 ### Troubleshooting
 
-If execution encounters issues:
-- Use `bd $BD_FLAGS list --status in_progress` to see current work state
-- Check `bd $BD_FLAGS blocked` for dependency issues
-- See @CLAUDE.md for troubleshooting solutions
+**If execution encounters issues:**
+```bash
+# Check current work state
+bd $BD_FLAGS list --status in_progress --json | jq -r '.[] | "[\(.id)] \(.title)"'
+
+# Check for blocked dependencies
+bd $BD_FLAGS blocked --json
+
+# Verify plan file is readable
+cat "$PLAN_FILE" | head -20
+```
+
+See @CLAUDE.md for comprehensive troubleshooting solutions.
 
 **Example usage:**
 ```

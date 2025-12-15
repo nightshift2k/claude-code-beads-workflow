@@ -59,7 +59,7 @@ For features touching more than 3 files:
 - Create design document in `docs/plans/`
 
 ### Multi-Agent Coordination
-See `.claude/rules/003-multi-agent-coordination.md` for detailed rules:
+See @.claude/rules/003-multi-agent-coordination.md for detailed rules:
 - **NEVER** edit same file from parallel agents
 - Use sequential operations for overlapping work
 - Document decision rationale (WHY, not just WHAT)
@@ -100,3 +100,13 @@ Before any feature completion:
 - Code quality metrics must be met
 - Documentation must be updated
 </quality_gates>
+
+---
+
+## Related Files
+
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/003-multi-agent-coordination.md - Multi-agent coordination rules
+- @.claude/rules/006-git-conventions.md - Git commit conventions
+- @.claude/commands/workflow-init.md - Project initialization
+- @.claude/commands/workflow-start.md - Feature creation workflow

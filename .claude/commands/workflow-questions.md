@@ -13,7 +13,7 @@ This command systematically tracks questions that need research or decisions.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source .claude/lib/workflow-precheck.sh
+source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-questions"
 ```
 
@@ -35,7 +35,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### For New Questions
 
-**Step 1:** Add to `.claude/rules/002-open-questions-template.md` with template:
+**Step 1:** Add to `@.claude/rules/002-open-questions-template.md` with template:
 ```markdown
 ### [Question ID: QXXX]
 **Question**: [What is the specific question?]
@@ -49,7 +49,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 **Step 2:** Create Beads issue to track research:
 ```bash
 bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
-  --description="Research to resolve question in .claude/rules/002-open-questions-template.md#QXXX. [Include specific research needs]" \
+  --description="Research to resolve question in @.claude/rules/002-open-questions-template.md#QXXX. [Include specific research needs]" \
   -t task -p [appropriate priority] \
   --json
 ```
@@ -61,7 +61,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
    ```bash
    bd $BD_FLAGS close [issue-id] --reason "Research complete: [summary]" --json
    ```
-3. Update `.claude/rules/002-open-questions-template.md` with resolution
+3. Update `@.claude/rules/002-open-questions-template.md` with resolution
 4. Mark question status as "Resolved"
 
 ### Question Prioritization
@@ -72,14 +72,23 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
 
 ### Best Practices
 
-- Always link Beads issues to entries in `.claude/rules/002-open-questions-template.md`
+- Always link Beads issues to entries in `@.claude/rules/002-open-questions-template.md`
 - Use `--deps discovered-from` to trace research back to original needs
 - Update question status when research is complete
 - Close Beads research issues when questions are answered
 
 ### Troubleshooting
 
-If question tracking fails, see @CLAUDE.md for troubleshooting solutions.
+**If question tracking fails:**
+```bash
+# Verify questions template exists
+test -f @.claude/rules/002-open-questions-template.md && echo "Exists" || echo "Missing"
+
+# Check existing research issues
+bd list --json | jq -r '.[] | select(.title | contains("Research:")) | "[\(.id)] \(.title)"'
+```
+
+See @CLAUDE.md for comprehensive troubleshooting solutions.
 
 **Example usage:**
 ```
