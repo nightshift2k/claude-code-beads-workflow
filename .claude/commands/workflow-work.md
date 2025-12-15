@@ -21,7 +21,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ---
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
+**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
 
 ### Process
 
@@ -51,7 +51,7 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
 
 **5. Execute with Specialized Agent**: Dispatch to appropriate agent
    - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
-   - **⚠️ Never implement directly** - dispatch via [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md)
+   - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
 
 ---
 

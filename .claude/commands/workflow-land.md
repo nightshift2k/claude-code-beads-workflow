@@ -28,7 +28,7 @@ trap 'workflow_cleanup "workflow-land"' EXIT INT TERM
 
 ---
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
+**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
 
 ### Process (MANDATORY - COMPLETE ALL STEPS)
 

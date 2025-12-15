@@ -21,7 +21,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ---
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
+**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
 
 ### Process
 

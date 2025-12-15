@@ -55,7 +55,7 @@ echo ""
 
 ---
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
+**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
 
 ### Process
 
@@ -95,9 +95,9 @@ Additional instructions for execution:
 
 ### Agent Dispatch
 
-**⚠️ Agent Dispatch:** Never implement code directly. See [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md) for agent selection and dispatch patterns.
+**⚠️ Agent Dispatch:** Never implement code directly. See @.claude/rules/005-agent-dispatch.md for agent selection and dispatch patterns.
 
-For multi-agent coordination rules (sequential execution, file locking), see [Multi-Agent Coordination](../.claude/rules/003-multi-agent-coordination.md).
+For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordination.md
 
 ---
 

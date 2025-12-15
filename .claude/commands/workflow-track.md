@@ -42,7 +42,7 @@ bd show $EPIC_ID --json
 # Returns: [{...}] - use jq '.[0].field' to access fields, NOT jq '.field'
 ```
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
+**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
 
 **2. Read Implementation Plan**: Parse the plan document to identify all tasks
 
@@ -202,7 +202,7 @@ bd list --json | jq '.[] | select(.id | contains("."))'
 
 - Implementation plan → Beads epic (e.g., `pydo-abc`)
 - Plan tasks → Beads child issues (e.g., `pydo-abc.1`, `pydo-abc.2`)
-- See [001-project-principles.md](../.claude/rules/001-project-principles.md#priority_system) for priority guidelines
+- See @.claude/rules/001-project-principles.md for priority guidelines
 - Default to Priority 2 (Medium) for most tasks
 
 ### Troubleshooting
@@ -217,7 +217,7 @@ If issue creation fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#trouble
 | "parent issue not found" | Wrong epic ID | Verify with `bd show $EPIC_ID` |
 | Description too long | Not a real limit | Beads handles 10K+ chars fine |
 | Special characters breaking | Escaping issue | Use heredoc (`<<'EOF'`) |
-| jq "Cannot index array with string" | bd returns array `[{...}]` | See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) |
+| jq "Cannot index array with string" | bd returns array `[{...}]` | See @.claude/rules/004-beads-json-patterns.md |
 
 ### Cleanup: Deleting Child Issues
 
