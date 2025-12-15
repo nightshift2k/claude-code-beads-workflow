@@ -51,9 +51,7 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
 
 **5. Execute with Specialized Agent**: Dispatch to appropriate agent
    - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
-   - Dispatch using the Task tool per [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md)
-
-**⚠️ Agent Dispatch:** Never implement code directly. See [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md) for agent selection and dispatch patterns.
+   - **⚠️ Never implement directly** - dispatch via [Agent Dispatch Rules](../.claude/rules/005-agent-dispatch.md)
 
 ---
 
