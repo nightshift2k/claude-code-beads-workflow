@@ -1,16 +1,24 @@
 # Beads CLI JSON Patterns
 
 <beads_json_critical>
-## Critical: All Beads Commands Return Arrays
+## Critical: Know Which Commands Return Arrays vs Objects
 
-**Every** Beads CLI command with `--json` returns a JSON **array** `[{...}]`, not an object `{...}`.
+Beads CLI commands with `--json` return **different formats** depending on the command:
 
-This applies to ALL commands: `bd show`, `bd list`, `bd ready`, `bd update`, `bd create`, `bd close`, etc.
+| Command | Returns | jq Pattern |
+|---------|---------|------------|
+| `bd create` | **object** `{...}` | `.id` |
+| `bd show` | **array** `[{...}]` | `.[0].id` |
+| `bd list` | **array** `[{...}]` | `.[].id` |
+| `bd ready` | **array** `[{...}]` | `.[].id` |
+| `bd update` | **array** `[{...}]` | `.[0].id` |
+| `bd close` | **array** `[{...}]` | `.[0].id` |
 
 ### Correct jq Patterns
 
 | Scenario | Pattern | Example |
 |----------|---------|---------|
+| After create | `.field` | `bd create "Task" --json \| jq -r '.id'` |
 | Single result | `.[0].field` | `bd show $ID --json \| jq -r '.[0].id'` |
 | All results | `.[].field` | `bd list --json \| jq -r '.[].id'` |
 | Count | `. \| length` | `bd ready --json \| jq '. \| length'` |
@@ -19,23 +27,24 @@ This applies to ALL commands: `bd show`, `bd list`, `bd ready`, `bd update`, `bd
 ### Common Errors
 
 ```bash
-# WRONG - causes "Cannot index array with string" error
-bd show $ID --json | jq -r '.id'
-bd update $ID --json | jq -r '.status'
+# WRONG for bd create - causes "Cannot index object with number"
+bd create "Task" --json | jq -r '.[0].id'
 
-# RIGHT - use array indexing
+# RIGHT for bd create - it returns an object
+bd create "Task" --json | jq -r '.id'
+
+# WRONG for bd show - causes "Cannot index array with string"
+bd show $ID --json | jq -r '.id'
+
+# RIGHT for bd show - it returns an array
 bd show $ID --json | jq -r '.[0].id'
-bd update $ID --json | jq -r '.[0].status'
 ```
 
-### Why Arrays?
+### Why Different Formats?
 
-Beads uses arrays consistently because:
-- `bd list` naturally returns multiple results
-- `bd show` could theoretically match multiple (by pattern)
-- Consistent API is easier to work with programmatically
-
-Even when you expect exactly one result, always use `.[0]` to access it.
+- `bd create` returns the single created issue as an **object**
+- `bd list/show/ready` return potentially multiple results as an **array**
+- `bd update/close` return affected issues as an **array** (could be multiple)
 </beads_json_critical>
 
 ## Other Beads CLI Gotchas

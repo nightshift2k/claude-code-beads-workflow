@@ -46,10 +46,10 @@ echo ""
 bd $BD_FLAGS create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json
 ```
 
-**Step 1b:** Extract the epic ID from the JSON output above (remember: Beads returns arrays):
+**Step 1b:** Extract the epic ID from the JSON output above:
 ```bash
-# The output is an array like [{"id": "pydo-abc", ...}]
-# Use .[0].id to get the first element's id
+# bd create returns an object like {"id": "pydo-abc", ...}
+# (Note: other commands like bd show/list return arrays)
 EPIC_ID="<paste-id-from-output>"
 echo ""
 echo "=========================================="
