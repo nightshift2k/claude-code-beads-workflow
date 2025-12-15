@@ -227,25 +227,21 @@ Verify your directory structure:
 
 ---
 
-## Part 3: Start Recording & Launch Claude Code
+## Part 3: Launch Claude Code
 
-Now that setup is complete, start the recorded session:
+Now that setup is complete, launch Claude Code:
 
-### 3.1 Start Session Recording
+### 3.1 Start Claude Code Session
 
 ```bash
 # Change to test directory
 cd ~/pydo-validation-test
 
-# Start recording (captures everything from here on)
-# -q flag suppresses script's startup/exit messages
-script -q pydo-validation-session.log
-
-# Now start Claude Code
+# Launch Claude Code
 claude
 ```
 
-**Important:** When finished with the entire validation, type `exit` to stop recording. The file `pydo-validation-session.log` will contain the complete Claude Code session.
+**Note:** If you need to capture session output for review, use Claude Code's built-in `/export` command at the end of your session, or copy relevant output manually. The `script` command is not recommended as it captures raw ANSI escape codes that make logs unreadable.
 
 ---
 
