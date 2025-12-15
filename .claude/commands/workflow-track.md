@@ -57,16 +57,21 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 **IMPORTANT:** Do NOT specify a custom ID or prefix when creating issues. Beads automatically generates IDs using the project directory name as the prefix. Specifying a custom prefix will cause a "prefix mismatch" error.
 
+**EFFICIENCY:** When creating multiple tasks from a plan, use batch mode to create all issues in a single command. This is faster and reduces API calls.
+
 ```bash
-# CORRECT - let Beads generate the ID automatically
+# BATCH MODE (recommended) - create multiple issues at once
+bd $BD_FLAGS create "Task 1: Project Setup" -t task -p 2 --parent [epic-id] --json && \
+bd $BD_FLAGS create "Task 2: Exceptions Module" -t task -p 2 --parent [epic-id] --json && \
+bd $BD_FLAGS create "Task 3: Task Model" -t task -p 2 --parent [epic-id] --json
+# ... continue for all tasks
+
+# SINGLE MODE (slower) - only use for individual tasks
 bd $BD_FLAGS create "[Task from plan]" \
-  --description="[Context from implementation plan] - From [path/to/implementation/plan.md]" \
+  --description="[Context from implementation plan]" \
   -t [task|epic|bug|feature] \
   -p [priority] \
   --json
-
-# WRONG - do NOT specify custom IDs or prefixes
-bd create "my-prefix-123" ...  # This will fail with prefix mismatch
 ```
 
 For child issues under an epic, use the `--parent` flag with the epic's auto-generated ID:
