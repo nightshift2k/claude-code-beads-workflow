@@ -28,6 +28,15 @@ trap 'workflow_cleanup "workflow-land"' EXIT INT TERM
 
 ---
 
+<jq_array_warning>
+**IMPORTANT:** Beads CLI commands return JSON **arrays** `[{...}]`, not objects `{...}`.
+
+When parsing with jq:
+- WRONG: `bd close $ID --json | jq -r '.id'` → error
+- RIGHT: `bd close $ID --json | jq -r '.[0].id'` → works
+- RIGHT: `bd list --json | jq -r '.[].id'` → works (iterates all)
+</jq_array_warning>
+
 ### Process (MANDATORY - COMPLETE ALL STEPS)
 
 **1. File remaining work**: Create Beads issues for any follow-up tasks discovered

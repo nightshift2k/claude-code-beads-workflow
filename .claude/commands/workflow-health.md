@@ -119,8 +119,8 @@ if [ -d ".beads" ] && command -v bd &> /dev/null; then
     echo "   WARN: $BLOCKED blocked issues"
   fi
 
-  # Check for ready work
-  READY=$(bd ready --json 2>/dev/null | jq '.issues | length' 2>/dev/null || echo "?")
+  # Check for ready work (bd ready returns array directly, not {issues: [...]})
+  READY=$(bd ready --json 2>/dev/null | jq '. | length' 2>/dev/null || echo "?")
   echo "   Ready to work: $READY"
 else
   echo "   (Beads not available)"

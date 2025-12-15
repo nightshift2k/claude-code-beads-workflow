@@ -21,11 +21,24 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ---
 
+<jq_array_warning>
+**IMPORTANT:** Beads CLI commands return JSON **arrays** `[{...}]`, not objects `{...}`.
+
+When parsing with jq:
+- WRONG: `bd update $ID --json | jq -r '.id'` → error
+- RIGHT: `bd update $ID --json | jq -r '.[0].id'` → works
+- RIGHT: `bd ready --json | jq -r '.[].id'` → works (iterates all)
+</jq_array_warning>
+
 ### Process
 
 **1. Ready Work Detection**: Find unblocked issues available for work
 ```bash
+# Get all ready issues
 bd $BD_FLAGS ready --json
+
+# Parse with jq (note: returns array)
+bd $BD_FLAGS ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```
 
 **2. Work Selection**: Review available work with context and priority
@@ -35,7 +48,8 @@ bd $BD_FLAGS ready --json
 
 **3. Status Update**: Claim the selected issue by updating to "in_progress"
 ```bash
-bd $BD_FLAGS update [issue-id] --status in_progress --json
+# Update status (note: use .[0] for single result)
+bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
 ```
 
 **4. Context Setup**: Review any related documentation or specifications
