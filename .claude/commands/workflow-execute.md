@@ -55,14 +55,7 @@ echo ""
 
 ---
 
-<jq_array_warning>
-**IMPORTANT:** Beads CLI commands return JSON **arrays** `[{...}]`, not objects `{...}`.
-
-When parsing with jq:
-- WRONG: `bd update $ID --json | jq -r '.status'` → error
-- RIGHT: `bd update $ID --json | jq -r '.[0].status'` → works
-- RIGHT: `bd list --json | jq -r '.[].id'` → works (iterates all)
-</jq_array_warning>
+**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
 
 ### Process
 

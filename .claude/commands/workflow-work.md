@@ -21,14 +21,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ---
 
-<jq_array_warning>
-**IMPORTANT:** Beads CLI commands return JSON **arrays** `[{...}]`, not objects `{...}`.
-
-When parsing with jq:
-- WRONG: `bd update $ID --json | jq -r '.id'` → error
-- RIGHT: `bd update $ID --json | jq -r '.[0].id'` → works
-- RIGHT: `bd ready --json | jq -r '.[].id'` → works (iterates all)
-</jq_array_warning>
+**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
 
 ### Process
 

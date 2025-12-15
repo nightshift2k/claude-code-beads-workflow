@@ -42,14 +42,7 @@ bd show $EPIC_ID --json
 # Returns: [{...}] - use jq '.[0].field' to access fields, NOT jq '.field'
 ```
 
-<jq_array_warning>
-**IMPORTANT:** Beads `bd show` and `bd list` return JSON **arrays** `[{...}]`, not objects `{...}`.
-
-When parsing with jq:
-- WRONG: `bd show $ID --json | jq -r '.id'` → error
-- RIGHT: `bd show $ID --json | jq -r '.[0].id'` → works
-- RIGHT: `bd list --json | jq -r '.[].id'` → works
-</jq_array_warning>
+**⚠️ Beads JSON:** All `bd` commands return arrays. See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) for correct jq usage.
 
 **2. Read Implementation Plan**: Parse the plan document to identify all tasks
 
@@ -224,7 +217,7 @@ If issue creation fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#trouble
 | "parent issue not found" | Wrong epic ID | Verify with `bd show $EPIC_ID` |
 | Description too long | Not a real limit | Beads handles 10K+ chars fine |
 | Special characters breaking | Escaping issue | Use heredoc (`<<'EOF'`) |
-| jq "Cannot index array with string" | bd returns array `[{...}]` | Use `jq '.[0].field'` not `jq '.field'` |
+| jq "Cannot index array with string" | bd returns array `[{...}]` | See [Beads JSON Patterns](../.claude/rules/004-beads-json-patterns.md) |
 
 ### Cleanup: Deleting Child Issues
 
