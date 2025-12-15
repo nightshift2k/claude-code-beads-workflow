@@ -87,9 +87,14 @@ Additional instructions for execution:
    - Create follow-up issues for discoveries: `bd $BD_FLAGS create "Discovered: [issue]" --deps discovered-from:[current-id]`
    - Mark issue as closed: `bd $BD_FLAGS close [id] --reason "[completion note]"`
 
-**5. Version Control**: Ensure proper Git integration during execution
-   - Commit after each major task completion
-   - Reference issue IDs in commit messages
+**5. Version Control**: Commit after EACH task completion
+```bash
+# After each task completes:
+git add .
+git commit -m "type(scope): [issue-id] description"
+```
+
+See @.claude/rules/006-git-conventions.md for commit format and timing rules.
 
 ---
 
