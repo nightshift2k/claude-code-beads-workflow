@@ -51,10 +51,10 @@ if [ ! -f "$QUESTIONS_FILE" ]; then
 fi
 
 # Check if user forgot to remove the template warning header
-if grep -q "TEMPLATE FILE - Do not edit directly" "$QUESTIONS_FILE"; then
+if grep -q "TEMPLATE FILE - DELETE THIS BLOCK WHEN COPYING" "$QUESTIONS_FILE"; then
   echo "WARNING: This appears to be the template file with the warning header still present."
   echo ""
-  echo "Please remove the header block (lines 1-18) from $QUESTIONS_FILE before using."
+  echo "Please remove the header block (lines 1-7) from $QUESTIONS_FILE before using."
   echo "The header is surrounded by <!-- --> comment markers."
   exit 1
 fi
