@@ -37,30 +37,40 @@ trap 'workflow_cleanup "workflow-land"' EXIT INT TERM
 bd $BD_FLAGS create "Follow-up task" --description="[context]" -t task -p [priority] --deps discovered-from:[current-id] --json
 ```
 
-**2. Update issue status**: Close completed issues, update in-progress issues with status/notes
+**2. Review current status**: Check what needs closing/updating (use `&&` to chain commands)
 ```bash
-bd $BD_FLAGS close [completed-ids] --reason "Completed [specific reason]" --json
-bd $BD_FLAGS update [in-progress-id] --status in_progress --note "[progress update]" --json
+echo "=== Closed ===" && bd $BD_FLAGS list --status closed --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== In-Progress ===" && bd $BD_FLAGS list --status in_progress --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== Open ===" && bd $BD_FLAGS list --status open --json | jq -r '.[] | "[\(.id)] \(.title)"'
 ```
 
-**3. Run quality gates**: Only if code changes were made, run appropriate tests/linters
+**3. Update issue status**: Close completed issues, update in-progress issues with notes
+```bash
+# Close completed work (run separately for each issue)
+bd $BD_FLAGS close [issue-id] --reason "Completed: [specific reason]" --json
+
+# Update in-progress issues with status notes
+bd $BD_FLAGS update [issue-id] --note "[progress update]" --json
+```
+
+**Note:** Run each `bd close` and `bd update` as separate commands. Do NOT combine with newlines.
+
+**4. Run quality gates**: Only if code changes were made, run appropriate tests/linters
    - Use project-specific test commands (technology agnostic)
    - Ensure all quality gates pass before proceeding
 
-**4. Persist changes**: In sandbox mode, run `bd sync --flush-only` to export changes to JSONL. In normal mode, changes auto-persist.
+**5. Persist changes**: In sandbox mode, run `bd sync --flush-only` to export changes to JSONL. In normal mode, changes auto-persist.
 ```bash
 # Sandbox mode (default for Claude Code)
 bd $BD_FLAGS sync --flush-only
 ```
 
-**5. Commit locally if needed**: Optionally commit changes to local git for history
+**6. Commit locally if needed**: Optionally commit changes to local git for history
 ```bash
 git add . && git commit -m "Workflow sync: [description of work completed]"
 ```
 
-**6. Choose next work item**: Use `bd ready` to identify next available work
+**7. Choose next work item**: Use `bd ready` to identify next available work
 ```bash
-bd $BD_FLAGS ready --json
+bd $BD_FLAGS ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```
 
 ---

@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `/workflow-health` bug using `.issues` instead of array directly
 - Missing `--force` flag with `--parent` causing "prefix mismatch" errors
 - Random task IDs instead of sequential hierarchical IDs
+- `/workflow-land` multi-line bash commands failing - added explicit `&&` chaining
 
 ## [0.1.0] - 2025-12-15
 
