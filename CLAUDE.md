@@ -26,8 +26,8 @@ This project follows the agentic development workflow using Beads' distributed i
 ### `/workflow-init` - Initialize project for workflow
 ```
 Use this when: Setting up a new project or starting fresh
-Process: Validates environment, initializes Beads, creates required directories
-Result: Project ready for agentic workflow
+Process: Validates environment, initializes Beads with SHORT prefix (max 8 chars), creates required directories
+Result: Project ready for agentic workflow with clean issue IDs (e.g., pydo-abc)
 ```
 
 ### `/workflow-health` - Diagnose workflow issues
@@ -41,16 +41,19 @@ Result: Comprehensive health report with issue identification
 ```
 Use this when: Starting a new feature or capability
 Process: Create a Beads epic to track the entire feature
-Result: Creates Beads epic for the feature in .beads/
+Result: Creates Beads epic (e.g., pydo-abc) - SAVE THIS ID for /workflow-track
+IMPORTANT: Note the epic ID from output - needed for --parent in child issues
 ```
 
 ### `/workflow-track` - Set up Beads tracking for planned work
 ```
 Usage: /workflow-track [path/to/implementation-plan.md]
 Use this when: Ready to track planned work in Beads
-Process: Convert implementation plan tasks into Beads issues with proper hierarchy
-Template: bd create "[Task from plan]" --description="[Context from plan file]" -t [task|epic|bug] -p [priority] --deps discovered-from:[feature-epic] --json
-Result: Creates Beads issues that map to your implementation plan tasks
+Process: Convert implementation plan tasks into Beads issues with:
+  - Hierarchical IDs using --parent $EPIC_ID --force (e.g., pydo-abc.1, pydo-abc.2)
+  - Full task content stored in descriptions (token-efficient)
+Template: bd create "[Task]" --parent $EPIC_ID --force -t task -p 2 --description="[FULL task content]" --json
+Result: Self-contained Beads issues with sequential child IDs under the epic
 ```
 
 ### `/workflow-execute` - Execute implementation plan with Beads tracking
@@ -150,6 +153,60 @@ Result: Questions are tracked and addressed systematically
                                       (close session)
 ```
 
+## Beads Issue ID Guidelines
+
+<beads_prefix_rules>
+### Prefix Requirements (CRITICAL)
+
+Beads issue IDs consist of a **prefix** + **hash** (e.g., `pydo-abc`).
+
+**Prefix rules:**
+- **Maximum 8 characters** (including trailing hyphen)
+- Must end with a hyphen (e.g., `pydo-`, `auth-`, `api-`)
+- Lowercase letters, numbers, hyphens only
+- Must start with a letter
+
+| Good Prefixes | Bad Prefixes |
+|---------------|--------------|
+| `pydo-` | `agentic-workflow-test-` (too long) |
+| `auth-` | `MyProject-` (uppercase) |
+| `api-` | `web_app-` (underscore) |
+
+**Set prefix during initialization:**
+```bash
+bd init -p pydo- --quiet
+```
+
+**Fix existing long prefix:**
+```bash
+bd rename-prefix pydo- --dry-run   # Preview
+bd rename-prefix pydo-             # Apply
+```
+</beads_prefix_rules>
+
+### Hierarchical Issue IDs
+
+Use `--parent --force` to create child issues with sequential dotted IDs:
+
+```bash
+# Create epic
+bd create "Feature name" -t epic -p 1 --json
+# Returns: pydo-abc
+
+# Create child tasks with hierarchical IDs
+bd create "Task 1" --parent pydo-abc --force -t task -p 2 --json
+# Returns: pydo-abc.1
+
+bd create "Task 2" --parent pydo-abc --force -t task -p 2 --json
+# Returns: pydo-abc.2
+```
+
+**Why `--force`?** Required to work around a Beads quirk where `--parent` triggers a false "prefix mismatch" error. Safe to use.
+
+**Without `--parent --force`:** Each task gets a random independent ID (`pydo-xyz`, `pydo-def`) with no visible relationship to the epic.
+
+---
+
 ## Issue Creation Best Practices
 
 When creating Beads issues from implementation plans:
@@ -159,24 +216,51 @@ When creating Beads issues from implementation plans:
 bd create "Implement user login" \
   --description="From implementation plan - implement the user login flow" \
   -t task -p 2 \
-  --deps discovered-from:bd-123 \
+  --parent $EPIC_ID --force \
   --json
 ```
 
 ### Map Hierarchies Properly
-- Feature epic → Beads epic (type: epic)
-- Plan tasks → Beads child issues (use `--parent <epic-id>`)
+- Feature epic → Beads epic (type: epic, e.g., `pydo-abc`)
+- Plan tasks → Beads child issues (use `--parent <epic-id> --force`, e.g., `pydo-abc.1`)
 
 Example:
 ```bash
 # Create epic
 bd create "Feature name" -t epic -p 1 --json
-# Returns: bd-abc
+# Returns: pydo-abc
 
-# Create child task under epic
-bd create "Task name" --parent bd-abc -t task -p 2 --json
-# Returns: bd-abc.1
+# Create child task under epic (ALWAYS use --parent --force)
+bd create "Task name" --parent pydo-abc --force -t task -p 2 --json
+# Returns: pydo-abc.1
 ```
+
+### Store Full Task Content in Descriptions
+
+For token efficiency, store complete task content in issue descriptions:
+```bash
+bd create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
+**Files:**
+- Modify: `pydo/models.py`
+- Create: `tests/test_models.py`
+
+**Step 1: Write failing test**
+```python
+def test_create_task():
+    task = Task(description="Test")
+    assert task.status == "pending"
+```
+
+**Step 2: Run test**
+```bash
+uv run pytest tests/test_models.py -v
+```
+Expected: FAIL
+EOF
+)" --json
+```
+
+This eliminates the need to re-read large implementation plans for each task.
 
 ### Use Appropriate Priorities
 

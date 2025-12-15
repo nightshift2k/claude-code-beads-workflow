@@ -9,7 +9,9 @@ description: Set up Beads issue tracking for planned work with proper hierarchy
 
 Use this command when ready to track planned work in Beads issue system.
 
-This command converts your implementation plan tasks into **self-contained** Beads issues with full task content stored in descriptions.
+This command converts your implementation plan tasks into **self-contained** Beads issues with:
+- Full task content stored in descriptions (token-efficient)
+- Hierarchical IDs using `--parent --force` (e.g., `pydo-abc.1`, `pydo-abc.2`)
 
 ### Argument
 
@@ -30,17 +32,48 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### Process
 
-**1. Read Implementation Plan**: Parse the plan document to identify all tasks
+**1. Get Epic ID**: Retrieve the parent epic from `/workflow-start`
+```bash
+# Get the epic ID (should be from /workflow-start output)
+EPIC_ID="<epic-id-from-workflow-start>"
 
-**2. Extract Full Task Content**: For each task, extract the COMPLETE content including:
+# Verify epic exists
+bd show $EPIC_ID --json
+```
+
+**2. Read Implementation Plan**: Parse the plan document to identify all tasks
+
+**3. Extract Full Task Content**: For each task, extract the COMPLETE content including:
    - File paths to create/modify
    - Code examples (tests, implementations)
    - Commands to run (test commands, verification steps)
    - Expected outcomes
 
-**3. Create Self-Contained Issues**: Store the full task content in each issue's description field. This eliminates the need to re-read the entire plan when working on individual tasks.
+**4. Create Hierarchical Child Issues**: Use `--parent $EPIC_ID --force` for sequential IDs
 
-**4. Establish Hierarchy**: Link all task issues to the parent epic using `--parent`
+---
+
+### Critical: Hierarchical IDs with `--parent --force`
+
+<hierarchical_ids>
+**WHY `--parent`:** Creates child issues with sequential dotted IDs:
+- Epic: `pydo-abc`
+- Child 1: `pydo-abc.1`
+- Child 2: `pydo-abc.2`
+- Child 3: `pydo-abc.3`
+
+**WHY `--force`:** Required to work around a Beads quirk where `--parent` triggers a false "prefix mismatch" error. The `--force` flag is safe here - it just allows the hierarchical ID creation.
+
+**Without `--parent --force`:** Each task gets an independent random ID:
+- Epic: `pydo-abc`
+- Task 1: `pydo-xyz` (no relationship visible in ID)
+- Task 2: `pydo-def` (no relationship visible in ID)
+</hierarchical_ids>
+
+**ALWAYS use both flags together:**
+```bash
+bd $BD_FLAGS create "Task Title" --parent $EPIC_ID --force -t task -p 2 --description="..." --json
+```
 
 ---
 
@@ -81,9 +114,9 @@ Expected: FAIL
 ...
 ```
 
-Create the issue with FULL content:
+Create the issue with FULL content AND hierarchical ID:
 ```bash
-bd $BD_FLAGS create "Task 3: Task Model" --parent [epic-id] -t task -p 2 --description="$(cat <<'EOF'
+bd $BD_FLAGS create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 **Files:**
 - Modify: `pydo/models.py`
 - Create: `tests/test_models.py`
@@ -109,27 +142,42 @@ EOF
 
 ---
 
-### Issue Creation Guidelines
+### Issue Creation: Batch Mode with Hierarchical IDs
 
-**IMPORTANT:** Do NOT specify a custom ID or prefix. Beads auto-generates IDs using the project directory name.
-
-**EFFICIENCY:** Create all issues in batch mode:
+**EFFICIENCY:** Create all issues in batch mode with `--parent --force`:
 
 ```bash
-# Create all tasks in one batch with full descriptions
-bd $BD_FLAGS create "Task 1: Project Setup" --parent $EPIC_ID -t task -p 2 --description="$(cat <<'EOF'
+# Set epic ID from /workflow-start
+EPIC_ID="pydo-abc"  # Replace with actual epic ID
+
+# Create all tasks in one batch with full descriptions and hierarchical IDs
+bd $BD_FLAGS create "Task 1: Project Setup" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 1 content from plan]
 EOF
 )" --json && \
-bd $BD_FLAGS create "Task 2: Exceptions" --parent $EPIC_ID -t task -p 2 --description="$(cat <<'EOF'
+bd $BD_FLAGS create "Task 2: Exceptions" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 2 content from plan]
 EOF
 )" --json && \
-bd $BD_FLAGS create "Task 3: Task Model" --parent $EPIC_ID -t task -p 2 --description="$(cat <<'EOF'
+bd $BD_FLAGS create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 3 content from plan]
 EOF
 )" --json
 # ... continue for all tasks
+```
+
+**Result:** Issues created with IDs `pydo-abc.1`, `pydo-abc.2`, `pydo-abc.3`, etc.
+
+---
+
+### Verify Hierarchy After Creation
+
+```bash
+# Check epic status shows children
+bd epic status $EPIC_ID --json
+
+# List all children (dotted IDs)
+bd list --json | jq '.[] | select(.id | contains("."))'
 ```
 
 ---
@@ -137,19 +185,20 @@ EOF
 ### Before Using This Command
 
 - Ensure you have a completed implementation plan (from writing-plans skill)
-- Verify that Beads has been initialized with `bd init --quiet`
-- Identify the epic ID to use as parent (from `/workflow-start`)
+- Verify that Beads has been initialized with short prefix (`bd init -p <short>-`)
+- **Identify the epic ID** from `/workflow-start` output - you need this for `--parent`
 
 ### After Using This Command
 
 - Use `/workflow-work` to begin implementation
 - Each issue is self-contained - no need to re-read the full plan
 - Issues available via `bd ready` for tracking
+- Hierarchical IDs make it easy to identify which tasks belong to which epic
 
 ### Mapping Guidelines
 
-- Implementation plan → Beads epic (auto-generated ID like `project-name-abc`)
-- Plan tasks → Beads child issues (auto-generated like `project-name-abc.1`, `project-name-abc.2`)
+- Implementation plan → Beads epic (e.g., `pydo-abc`)
+- Plan tasks → Beads child issues (e.g., `pydo-abc.1`, `pydo-abc.2`)
 - See [001-project-principles.md](../.claude/rules/001-project-principles.md#priority_system) for priority guidelines
 - Default to Priority 2 (Medium) for most tasks
 
@@ -158,6 +207,24 @@ EOF
 If issue creation fails, see [CLAUDE.md#troubleshooting](../../CLAUDE.md#troubleshooting) for common solutions.
 
 **Common issues:**
-- "prefix mismatch" → Don't specify custom IDs, let Beads auto-generate
-- Description too long → Beads handles 10K+ chars fine, not a real limit
-- Special characters → Use heredoc (`<<'EOF'`) for proper escaping
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "prefix mismatch" with `--parent` | Beads quirk | Add `--force` flag |
+| Random IDs instead of `.1`, `.2` | Missing `--parent` | Use `--parent $EPIC_ID --force` |
+| "parent issue not found" | Wrong epic ID | Verify with `bd show $EPIC_ID` |
+| Description too long | Not a real limit | Beads handles 10K+ chars fine |
+| Special characters breaking | Escaping issue | Use heredoc (`<<'EOF'`) |
+
+### Cleanup: Deleting Child Issues
+
+If you need to recreate issues:
+```bash
+# List all child IDs
+bd list --json | jq -r '.[] | select(.id | contains(".")) | .id'
+
+# Delete all children (keeps epic)
+bd list --json | jq -r '.[] | select(.id | contains(".")) | .id' | xargs -I {} bd delete {} --force
+
+# Or delete by issue_type
+bd list --json | jq -r '.[] | select(.issue_type == "task") | .id' | xargs -I {} bd delete {} --force
+```
