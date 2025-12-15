@@ -241,7 +241,7 @@ cd ~/pydo-validation-test
 claude
 ```
 
-**Note:** If you need to capture session output for review, use Claude Code's built-in `/export` command at the end of your session, or copy relevant output manually. The `script` command is not recommended as it captures raw ANSI escape codes that make logs unreadable.
+**Session Recording:** To capture the session for review, use Claude Code's built-in `/export` command before exiting. This creates a clean, readable transcript. Avoid using the `script` command as it captures raw ANSI escape codes that make logs unreadable.
 
 ---
 
@@ -734,20 +734,26 @@ Check each item that worked correctly:
 
 ## Part 11: Session Wrap-up
 
-### 11.1 Stop Recording
+### 11.1 Export Session (Optional)
 
+Before exiting Claude Code, optionally export the session transcript:
+
+```
+/export
+```
+
+This saves a clean, readable transcript of the session. Choose a filename like `pydo-validation-session.md`.
+
+Then exit Claude Code:
 ```bash
-# Exit Claude Code first (type 'exit' or Ctrl+D)
-
-# Then stop the script recording (type 'exit' again)
+# Type 'exit' or press Ctrl+D to exit Claude Code
 exit
-# This closes the script session and saves to pydo-validation-session.log
 ```
 
 ### 11.2 Collect Artifacts
 
 Gather these files for analysis:
-1. `pydo-validation-session.log` - Full session transcript
+1. Exported session transcript (if created with `/export`)
 2. `.beads/issues.jsonl` - Issue tracking state
 3. `docs/plans/*.md` - Implementation plan created
 4. `pydo/` - The implemented project
