@@ -138,17 +138,11 @@ For features touching more than 3 files, consider using the brainstorming skill 
 
 **If epic creation fails:**
 ```bash
-# Verify Beads is initialized
-ls -la .beads/
-
-# Check Beads database status
-bd info --json | jq '.'
-
-# Test basic bd commands
-bd list --limit 1 --json
+# Run quick diagnostics
+source @.claude/lib/workflow-precheck.sh && workflow_quick_diagnose "epic-creation"
 ```
 
-See @CLAUDE.md for comprehensive troubleshooting solutions.
+See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.
 
 **If prefix is too long:**
 ```bash

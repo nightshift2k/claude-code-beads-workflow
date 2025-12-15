@@ -78,17 +78,11 @@ bd $BD_FLAGS stats --json
 
 **If status retrieval fails:**
 ```bash
-# Check Beads database health
-bd info --json
-
-# Verify database file exists
-ls -la .beads/beads.db
-
-# Try basic list command
-bd list --limit 5 --json
+# Run quick diagnostics
+source @.claude/lib/workflow-precheck.sh && workflow_quick_diagnose "status-check"
 ```
 
-See @CLAUDE.md for comprehensive troubleshooting solutions.
+See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.
 
 **Example usage:**
 ```

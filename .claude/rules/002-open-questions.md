@@ -1,6 +1,10 @@
 # Open Questions & Research Items
 
-This document tracks questions that need further investigation or decisions that need to be made.
+This is the **working file** for tracking questions that need further investigation or decisions.
+
+Add new questions directly to this file using the format below. The placeholder entries (Q001-Q004) show the expected structure - replace them with actual questions as they arise.
+
+**Usage:** See `/workflow-questions` command for the full workflow.
 
 ## Critical (P0 - Must be resolved before implementation)
 

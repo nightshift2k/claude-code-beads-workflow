@@ -65,7 +65,7 @@ your-project/
 │   ├── lib/                # Shared utilities (precheck.sh)
 │   └── rules/              # Project rules and principles
 │       ├── 001-project-principles.md
-│       ├── 002-open-questions-template.md
+│       ├── 002-open-questions.md
 │       ├── 003-multi-agent-coordination.md
 │       ├── 004-beads-json-patterns.md
 │       ├── 005-agent-dispatch.md

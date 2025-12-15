@@ -217,7 +217,7 @@ Verify your directory structure:
 │   │   └── workflow-precheck.sh
 │   └── rules/
 │       ├── 001-project-principles.md
-│       ├── 002-open-questions-template.md
+│       ├── 002-open-questions.md
 │       └── 003-multi-agent-coordination.md
 ├── docs/
 │   └── plans/

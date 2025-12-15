@@ -23,7 +23,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### Process
 
-**1. Record Questions**: Add to `.claude/rules/002-open-questions-template.md` with proper categorization
+**1. Record Questions**: Add new questions to `@.claude/rules/002-open-questions.md` (the working file, not a template)
 
 **2. Create Tracking Issues**: Create corresponding Beads issues for research tasks
 
@@ -35,7 +35,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 ### For New Questions
 
-**Step 1:** Add to `@.claude/rules/002-open-questions-template.md` with template:
+**Step 1:** Add to `@.claude/rules/002-open-questions.md` with template:
 ```markdown
 ### [Question ID: QXXX]
 **Question**: [What is the specific question?]
@@ -49,7 +49,7 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 **Step 2:** Create Beads issue to track research:
 ```bash
 bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
-  --description="Research to resolve question in @.claude/rules/002-open-questions-template.md#QXXX. [Include specific research needs]" \
+  --description="Research to resolve question in @.claude/rules/002-open-questions.md#QXXX. [Include specific research needs]" \
   -t task -p [appropriate priority] \
   --json
 ```
@@ -61,7 +61,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
    ```bash
    bd $BD_FLAGS close [issue-id] --reason "Research complete: [summary]" --json
    ```
-3. Update `@.claude/rules/002-open-questions-template.md` with resolution
+3. Update `@.claude/rules/002-open-questions.md` with resolution
 4. Mark question status as "Resolved"
 
 ### Question Prioritization
@@ -72,7 +72,7 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
 
 ### Best Practices
 
-- Always link Beads issues to entries in `@.claude/rules/002-open-questions-template.md`
+- Always link Beads issues to entries in `@.claude/rules/002-open-questions.md`
 - Use `--deps discovered-from` to trace research back to original needs
 - Update question status when research is complete
 - Close Beads research issues when questions are answered
@@ -81,14 +81,14 @@ bd $BD_FLAGS create "Research: QXXX - [Question Topic]" \
 
 **If question tracking fails:**
 ```bash
-# Verify questions template exists
-test -f @.claude/rules/002-open-questions-template.md && echo "Exists" || echo "Missing"
+# Run quick diagnostics
+source @.claude/lib/workflow-precheck.sh && workflow_quick_diagnose "questions"
 
 # Check existing research issues
-bd list --json | jq -r '.[] | select(.title | contains("Research:")) | "[\(.id)] \(.title)"'
+bd $BD_FLAGS list --json | jq -r '.[] | select(.title | contains("Research:")) | "[\(.id)] \(.title)"'
 ```
 
-See @CLAUDE.md for comprehensive troubleshooting solutions.
+See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.
 
 **Example usage:**
 ```

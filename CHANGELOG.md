@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `/workflow-health` - Diagnose workflow issues
 - Project rules and principles:
   - `001-project-principles.md` - Core principles and priority system
-  - `002-open-questions-template.md` - Question tracking template
+  - `002-open-questions.md` - Question tracking template
   - `003-multi-agent-coordination.md` - Multi-agent coordination guidelines
 - Environment precheck library (`workflow-precheck.sh`)
 - Comprehensive troubleshooting documentation

@@ -142,6 +142,50 @@ workflow_cleanup() {
   exit $EXIT_CODE
 }
 
+# Quick diagnostic function for troubleshooting
+# Use this in troubleshooting sections instead of duplicating checks
+workflow_quick_diagnose() {
+  local CONTEXT="${1:-general}"
+
+  echo "=== Quick Diagnostics ($CONTEXT) ==="
+  echo ""
+
+  # Check 1: bd CLI
+  if command -v bd &> /dev/null; then
+    echo "bd CLI: OK ($(bd version 2>&1 | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1))"
+  else
+    echo "bd CLI: MISSING - install from https://github.com/steveyegge/beads"
+    return 1
+  fi
+
+  # Check 2: .beads directory
+  if [ -d ".beads" ]; then
+    echo ".beads/: OK"
+  else
+    echo ".beads/: MISSING - run /workflow-init"
+    return 1
+  fi
+
+  # Check 3: Database responds
+  if bd ${BD_FLAGS:-} list --limit 1 &> /dev/null; then
+    echo "Database: RESPONDING"
+  else
+    echo "Database: NOT RESPONDING - try 'bd import --force'"
+    return 1
+  fi
+
+  # Check 4: Issue counts
+  OPEN=$(bd ${BD_FLAGS:-} list --status open --json 2>/dev/null | jq '. | length' 2>/dev/null || echo "?")
+  IN_PROGRESS=$(bd ${BD_FLAGS:-} list --status in_progress --json 2>/dev/null | jq '. | length' 2>/dev/null || echo "?")
+  echo "Issues: $OPEN open, $IN_PROGRESS in-progress"
+
+  echo ""
+  echo "For comprehensive diagnostics, run: /workflow-health"
+  echo ""
+  return 0
+}
+
 # Export functions for use in sourced scripts
 export -f workflow_precheck 2>/dev/null || true
 export -f workflow_cleanup 2>/dev/null || true
+export -f workflow_quick_diagnose 2>/dev/null || true
