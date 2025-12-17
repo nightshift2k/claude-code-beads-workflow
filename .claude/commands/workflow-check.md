@@ -13,46 +13,46 @@ This command provides a comprehensive view of implementation status and tracking
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
-workflow_precheck "workflow-check"
+uv run python .claude/lib/workflow.py precheck --name workflow-check
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
 
 ---
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
-
 ### Process
 
 **1. Active Features**: Review Beads epics and their status
 ```bash
-bd $BD_FLAGS list -t epic --json
+uv run python .claude/lib/workflow.py list --json
+# Filter for type=epic in output
 ```
 
 **2. Open Issues**: Check open issues by status
 ```bash
-bd $BD_FLAGS list --status open --json
+uv run python .claude/lib/workflow.py list --status open --json
 ```
 
 **3. Ready Work**: Find unblocked work available
 ```bash
-bd $BD_FLAGS ready --json
+uv run python .claude/lib/workflow.py ready --json
 ```
 
-**4. Stale Issues**: Identify forgotten work
+**4. Stale Issues**: Identify forgotten work (7+ days old)
 ```bash
-bd $BD_FLAGS stale --days 7 --json
+bd --sandbox stale --days 7 --json
 ```
 
 **5. Blocked Issues**: Check for dependency blocks
 ```bash
-bd $BD_FLAGS blocked --json
+uv run python .claude/lib/workflow.py list --blocked --json
 ```
 
 **6. Project Statistics**: Review overall progress
 ```bash
-bd $BD_FLAGS stats --json
+# Count by status
+uv run python .claude/lib/workflow.py list --status open --json
+uv run python .claude/lib/workflow.py list --status closed --json
 ```
 
 ---
@@ -79,7 +79,6 @@ bd $BD_FLAGS stats --json
 **If status retrieval fails:**
 ```bash
 # Run quick diagnostics
-source @.claude/lib/workflow-precheck.sh && workflow_quick_diagnose "status-check"
 ```
 
 See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.

@@ -1,576 +1,110 @@
-# Agentic Development Workflow Instructions
+# Claude Code Beads Workflow - Meta Project
 
-<project_context>
 ## Project Information
-<!-- CUSTOMIZE THIS SECTION FOR YOUR PROJECT -->
+
 ```
-Project: [Your Project Name]
-Description: [Brief description of what this project does]
-Tech Stack: [Languages, frameworks, tools]
-Design Doc: [Path to design document, e.g., docs/plans/your-design.md]
+Project: claude-code-beads-workflow
+Description: Template for agentic AI development using Beads issue tracking
+Tech Stack: Bash, Markdown, Beads CLI
+Repository: https://github.com/nightshift2k/claude-code-beads-workflow
 ```
-<!-- END CUSTOMIZATION SECTION -->
-</project_context>
 
 ## Overview
 
-This project follows the agentic development workflow using Beads' distributed issue tracking with integrated skill-based planning. This workflow ensures:
+This project is the workflow template itself, not a project using the template. When contributing to the workflow commands, rules, or documentation, use this file.
 
-- Proper issue tracking during implementation
-- Clear task breakdown and coordination with Beads
-- Local consistency across development sessions
-- Audit trail for all changes
+**For projects using this template:** Copy `CLAUDE.md.example` to your project and customize it.
 
-## Key Slash Commands for Common Tasks
+## Development Workflow
 
-### `/workflow-init` - Initialize project for workflow
-```
-Use this when: Setting up a new project or starting fresh
-Process: Validates environment, initializes Beads with SHORT prefix (max 8 chars), creates required directories
-Result: Project ready for agentic workflow with clean issue IDs (e.g., pydo-abc)
-```
+Follow the same workflow this template provides:
 
-### `/workflow-health` - Diagnose workflow issues
-```
-Use this when: Encountering workflow problems or verifying system health
-Process: Checks environment, Beads status, configuration, and git state
-Result: Comprehensive health report with issue identification
-```
+1. **Start features** with `/workflow-start` to create Beads epics
+2. **Track work** with `/workflow-track` after creating implementation plans
+3. **Execute tasks** with `/workflow-work` or `/workflow-execute`
+4. **Complete sessions** with `/workflow-land`
 
-### `/workflow-start` - Begin a new feature
-```
-Use this when: Starting a new feature or capability
-Process: Create a Beads epic to track the entire feature
-Result: Creates Beads epic (e.g., pydo-abc) - SAVE THIS ID for /workflow-track
-IMPORTANT: Note the epic ID from output - needed for --parent in child issues
-```
+## Contributing to Workflow Commands
 
-### `/workflow-track` - Set up Beads tracking for planned work
-```
-Usage: /workflow-track [path/to/implementation-plan.md]
-Use this when: Ready to track planned work in Beads
-Process: Convert implementation plan tasks into Beads issues with:
-  - Hierarchical IDs using --parent $EPIC_ID --force (e.g., pydo-abc.1, pydo-abc.2)
-  - Full task content stored in descriptions (token-efficient)
-Template: bd create "[Task]" --parent $EPIC_ID --force -t task -p 2 --description="[FULL task content]" --json
-Result: Self-contained Beads issues with sequential child IDs under the epic
-```
+When modifying commands in `.claude/commands/`:
 
-### `/workflow-execute` - Execute implementation plan with Beads tracking
-```
-Use this when: Ready to implement based on an implementation plan
-Process: /workflow-execute [path/to/implementation/plan.md]
-Result: Executes the plan with integrated Beads tracking for each task
-```
+1. **Test changes** using the validation test (`docs/test-workflow-validation.md`)
+2. **Document decisions** in appropriate rule files
+3. **Update CHANGELOG.md** with changes
+4. **Update CLAUDE.md.example** if template instructions change
 
-### `/workflow-work` - Find and claim available work
-```
-Use this when: Ready to start working
-Process: bd ready --json to find unblocked issues, then bd update [id] --status in_progress --json to claim
-Result: Identifies work and marks it as in progress
-```
-
-### `/workflow-land` - Complete a work session properly
-```
-Use this when: Finishing work session (REQUIRED before stopping)
-Process:
-1. bd create any discovered follow-up work
-2. bd close completed issues with --reason
-3. bd update in-progress issues with status/notes
-4. In sandbox mode: `bd sync --flush-only` (exports changes to JSONL)
-   In normal mode: Changes auto-persist, skip this step
-5. git add . && git commit -m "Workflow sync" (optional, for local history)
-Result: Clean session completion with all work tracked and locally consistent
-```
-
-### `/workflow-check` - Review project status
-```
-Use this when: Need to understand current project state
-Process: Review active Beads issues (bd list --status open) and outstanding work
-Result: Current state of implementation work and tracking
-```
-
-### `/workflow-questions` - Track and resolve open questions
-```
-Usage: /workflow-questions [path/to/questions.md]
-Use this when: Need to record or address open questions systematically
-Process:
-  1. Create questions file from template: cp .claude/lib/open-questions-template.md docs/open-questions.md
-  2. Remove template header from your copy
-  3. Add questions to your file and create corresponding Beads issues
-Template: bd create "Research: [Question]" --description="See [questions-file]#[ID]" -t task -p [priority] --json
-Result: Questions are tracked and addressed systematically
-Note: Projects choose their own location for questions file (not in .claude/rules/)
-```
-
-<workflow_principles>
 ## Key Principles
 
-1. **Plan-Driven Development**: All implementation should be based on detailed implementation plans (from writing-plans skill)
-2. **Issue Tracking**: All work must be tracked in Beads
-3. **Local Consistency**: Use Beads sync to maintain consistency across local sessions
-4. **Constitutional Compliance**: Follow project constitution throughout
-</workflow_principles>
+### Keep Template Generic
+Avoid project-specific patterns. Users customize after copying.
 
-## Integration Process
+### Maintain Backward Compatibility
+Existing users rely on command interfaces. Add features, don't break existing usage.
 
-### From Idea to Implementation
-1. Create feature epic with `/workflow-start`
-2. Create implementation plan (using writing-plans skill)
-3. Set up tracking with `/workflow-track`
-4. Execute with `/workflow-execute` or work incrementally with `/workflow-work`
+### Document Gotchas
+When discovering Beads CLI quirks or Claude Code limitations, document them in:
+- `004-beads-json-patterns.md` for Beads CLI issues
+- Appropriate rule files for workflow patterns
+- CLAUDE.md.example troubleshooting section
 
-### Agent Session Flow
-1. **Start**: Check `/workflow-work` for available tasks or use `/workflow-execute` for full plan execution
-2. **Execute**: Use Beads CLI for issue management during work
-3. **Complete**: Always finish with `/workflow-land` for proper session closure
+### Write Clearly
+Apply Strunk's rules:
+- Use active voice
+- Omit needless words
+- Put statements in positive form
+- Use definite, specific, concrete language
 
-### Workflow Lifecycle
+## Project Structure
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                     AGENTIC WORKFLOW LIFECYCLE                   │
-└──────────────────────────────────────────────────────────────────┘
-
-  SETUP          PLANNING            TRACKING         EXECUTION
-    │                │                   │                │
-    ▼                ▼                   ▼                ▼
-/workflow-init → /workflow-start → /workflow-track → /workflow-execute
-    │           (create epic)    (plan → issues)    (run full plan)
-    │                │                   │                │
-    │                ▼                   │           OR   ▼
-    │           brainstorm +             │        /workflow-work
-    │           writing-plans            │        (task by task)
-    │                │                   │                │
-    │                └───────────────────┘                │
-    │                                                     │
-    │              MONITORING                             │
-    │                  │                                  │
-    │     /workflow-check (status review)                 │
-    │     /workflow-health (diagnostics)                  │
-    │     /workflow-questions (track blockers)            │
-    │                                                     │
-    │                                    COMPLETION       │
-    │                                        │            │
-    └────────────────────────────────────────┼────────────┘
-                                             ▼
-                                      /workflow-land
-                                      (close session)
+.claude/
+├── commands/           # 11 workflow slash commands
+├── lib/                # Shared utilities
+│   └── workflow.py     # Python workflow CLI tool (stdlib only)
+└── rules/              # Project rules and principles
+    ├── 001-project-principles.md
+    ├── 003-multi-agent-coordination.md
+    ├── 004-beads-json-patterns.md
+    ├── 005-agent-dispatch.md
+    └── 006-git-conventions.md
+docs/
+├── plans/              # Implementation plans
+├── QUICKSTART.md       # 5-minute introduction
+└── test-workflow-validation.md  # Validation test
+CLAUDE.md.example       # Template for users to copy
 ```
 
-## Beads Issue ID Guidelines
+## Testing Changes
 
-<beads_prefix_rules>
-### Prefix Requirements (CRITICAL)
-
-Beads issue IDs consist of a **prefix** + **hash** (e.g., `pydo-abc`).
-
-**Prefix rules:**
-- **Maximum 8 characters** (including trailing hyphen)
-- Must end with a hyphen (e.g., `pydo-`, `auth-`, `api-`)
-- Lowercase letters, numbers, hyphens only
-- Must start with a letter
-
-| Good Prefixes | Bad Prefixes |
-|---------------|--------------|
-| `pydo-` | `agentic-workflow-test-` (too long) |
-| `auth-` | `MyProject-` (uppercase) |
-| `api-` | `web_app-` (underscore) |
-
-**Set prefix during initialization:**
-```bash
-bd init -p pydo- --quiet
-```
-
-**Fix existing long prefix:**
-```bash
-bd rename-prefix pydo- --dry-run   # Preview
-bd rename-prefix pydo-             # Apply
-```
-</beads_prefix_rules>
-
-### Hierarchical Issue IDs
-
-Use `--parent --force` to create child issues with sequential dotted IDs:
+Use the validation test to verify workflow commands:
 
 ```bash
-# Create epic
-bd create "Feature name" -t epic -p 1 --json
-# Returns: pydo-abc
-
-# Create child tasks with hierarchical IDs
-bd create "Task 1" --parent pydo-abc --force -t task -p 2 --json
-# Returns: pydo-abc.1
-
-bd create "Task 2" --parent pydo-abc --force -t task -p 2 --json
-# Returns: pydo-abc.2
+# Follow the pydo CLI example in docs/test-workflow-validation.md
+# This exercises all 11 workflow commands
 ```
 
-**Why `--force`?** Required to work around a Beads quirk where `--parent` triggers a false "prefix mismatch" error. Safe to use.
+## Quality Gates
 
-**Without `--parent --force`:** Each task gets a random independent ID (`pydo-xyz`, `pydo-def`) with no visible relationship to the epic.
+Before closing issues on this meta-project:
 
----
+- [ ] Commands work as documented
+- [ ] CHANGELOG.md updated
+- [ ] CLAUDE.md.example updated (if template changes)
+- [ ] README.md updated (if user-facing features change)
+- [ ] Validation test passes (if commands modified)
 
-## Issue Creation Best Practices
+## Beads Configuration
 
-When creating Beads issues from implementation plans:
-
-### Include Context Links
-```bash
-bd create "Implement user login" \
-  --description="From implementation plan - implement the user login flow" \
-  -t task -p 2 \
-  --parent $EPIC_ID --force \
-  --json
-```
-
-### Map Hierarchies Properly
-- Feature epic → Beads epic (type: epic, e.g., `pydo-abc`)
-- Plan tasks → Beads child issues (use `--parent <epic-id> --force`, e.g., `pydo-abc.1`)
-
-Example:
-```bash
-# Create epic
-bd create "Feature name" -t epic -p 1 --json
-# Returns: pydo-abc
-
-# Create child task under epic (ALWAYS use --parent --force)
-bd create "Task name" --parent pydo-abc --force -t task -p 2 --json
-# Returns: pydo-abc.1
-```
-
-### Store Full Task Content in Descriptions
-
-For token efficiency, store complete task content in issue descriptions:
-```bash
-bd create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
-**Files:**
-- Modify: `pydo/models.py`
-- Create: `tests/test_models.py`
-
-**Step 1: Write failing test**
-```python
-def test_create_task():
-    task = Task(description="Test")
-    assert task.status == "pending"
-```
-
-**Step 2: Run test**
-```bash
-uv run pytest tests/test_models.py -v
-```
-Expected: FAIL
-EOF
-)" --json
-```
-
-This eliminates the need to re-read large implementation plans for each task.
-
-### Use Appropriate Priorities
-
-See @.claude/rules/001-project-principles.md for the priority system.
-
-Quick reference: P0=Critical, P1=High, P2=Medium (default), P3=Low, P4=Backlog
-
-<session_completion_rules>
-## Session Workflow (When "Land the Plane" is requested)
-
-**MANDATORY WORKFLOW - COMPLETE ALL STEPS:**
-
-1. **File remaining work** - Use `bd create` for any follow-up tasks discovered
-2. **Update issue status** - Close completed issues, update in-progress to reflect status
-3. **Run quality gates** - Only if code changes made, run appropriate tests/linters
-4. **Persist changes** - In sandbox mode, run `bd sync --flush-only` to export changes to JSONL. In normal mode, changes auto-persist.
-5. **Commit locally if needed** - `git add . && git commit -m "[description of work completed]"` (optional, for local history)
-6. **Choose next work item** - Use `bd ready --json` to identify next available work
-
-**Use `/workflow-land` for this exact sequence**
-</session_completion_rules>
-
-## Troubleshooting
-
-### Environment Validation
-
-All workflow commands now include automatic environment validation. If you encounter issues, the precheck system will guide you through resolution.
-
-**Manual precheck** (if needed):
-```bash
-source .claude/lib/workflow-precheck.sh
-workflow_precheck "manual-check"
-```
-
----
-
-### Common Error Messages and Solutions
-
-#### "bd: command not found"
-
-**Symptom:**
-```
-/workflow-start "New feature"
-bash: bd: command not found
-```
-
-**Cause:** Beads CLI not installed or not in PATH
-
-**Solutions:**
-1. **Install via Go:**
-   ```bash
-   go install github.com/steveyegge/beads/cmd/bd@latest
-   ```
-
-2. **Install via Homebrew (macOS):**
-   ```bash
-   brew install steveyegge/tap/beads
-   ```
-
-3. **Verify installation:**
-   ```bash
-   bd version
-   which bd
-   ```
-
-4. **Add to PATH if needed:**
-   ```bash
-   export PATH="$PATH:$(go env GOPATH)/bin"
-   # Add to ~/.bashrc or ~/.zshrc for persistence
-   ```
-
-**Reference:** [Beads Installation Guide](https://github.com/steveyegge/beads/blob/main/docs/INSTALLING.md)
-
----
-
-#### "no .beads directory found"
-
-**Symptom:**
-```
-bd ready
-Error: no .beads directory found
-```
-
-**Cause:** Project not initialized with Beads tracking
-
-**Solutions:**
-1. **Initialize automatically (workflow commands do this):**
-   ```
-   /workflow-start "First feature"
-   # Will prompt to initialize
-   ```
-
-2. **Initialize manually:**
-   ```bash
-   bd init --quiet
-   ```
-
-3. **Verify initialization:**
-   ```bash
-   ls -la .beads/
-   # Should show: beads.db, issues.jsonl, README.md, etc.
-   ```
-
----
-
-#### "database out of sync with JSONL"
-
-**Symptom:**
-```
-bd ready
-Error: database out of sync with JSONL
-```
-
-**Cause:** Sandbox mode is used by default for Claude Code compatibility.
-
-**Solution:** Sandbox mode is already enabled. If you see this error:
-```bash
-bd import --force
-```
-
-**Reference:** [Beads Troubleshooting - Sandboxed Environments](https://github.com/steveyegge/beads/blob/main/docs/TROUBLESHOOTING.md#sandboxed-environments)
-
----
-
-#### "merge conflict in .beads/issues.jsonl"
-
-**Symptom:**
-```
-bd sync
-Error: merge conflict in .beads/issues.jsonl
-```
-
-**Cause:** Same issue modified on different branches
-
-**Solutions:**
-1. **Use bd merge tool:**
-   ```bash
-   git show :1:.beads/issues.jsonl > base.jsonl
-   git show :2:.beads/issues.jsonl > ours.jsonl
-   git show :3:.beads/issues.jsonl > theirs.jsonl
-
-   bd merge merged.jsonl base.jsonl ours.jsonl theirs.jsonl
-
-   cp merged.jsonl .beads/issues.jsonl
-   git add .beads/issues.jsonl
-   git merge --continue
-   ```
-
-2. **Simple conflicts (different fields):**
-   ```bash
-   # Keep both changes (manual edit)
-   # OR prefer one side:
-   git checkout --ours .beads/issues.jsonl   # Keep your changes
-   git checkout --theirs .beads/issues.jsonl # Keep their changes
-
-   bd import -i .beads/issues.jsonl
-   git add .beads/issues.jsonl
-   git merge --continue
-   ```
-
-**Reference:** [Beads Conflict Resolution](https://github.com/steveyegge/beads/blob/main/.agent/workflows/resolve-beads-conflict.md)
-
----
-
-#### "bd ready" returns no issues
-
-**Symptom:**
-```
-/workflow-work
-bd ready --json
-{"issues": []}
-```
-
-**Cause:** No unblocked work available
-
-**Diagnostic Commands:**
-```bash
-# Check for blocked issues
-bd blocked
-
-# View all open issues
-bd list --status open
-
-# Check for stale issues
-bd stale --days 7
-
-# Check dependency tree
-bd dep tree [issue-id]
-```
-
-**Solutions:**
-1. **If issues are blocked:**
-   - Resolve blocking issues first
-   - Or remove blocking dependencies: `bd dep remove [from-id] [to-id]`
-
-2. **If no open issues:**
-   - All work complete!
-   - Create new work: `/workflow-start "Next feature"`
-
-3. **If blocked by circular dependencies:**
-   ```bash
-   bd dep cycles  # Detect cycles
-   bd dep remove [from-id] [to-id]  # Break cycle
-   ```
-
----
-
-### Recovery Decision Tree
-
-When something goes wrong, try these in order:
-
-```
-1. FIRST: bd import --force
-   └─ Rebuilds database from JSONL (fixes most sync issues)
-
-2. IF import fails: Database Corruption Recovery (below)
-   └─ Backup DB, reinitialize, reimport from JSONL
-
-3. IF still broken: Session State Recovery (below)
-   └─ Check in-progress issues, resume or reset status
-
-4. LAST RESORT: Full Reset (below)
-   └─ Backup everything, delete DB, start fresh
-```
-
-**Rule:** Never jump to Full Reset without trying simpler fixes first.
-
----
-
-### Emergency Recovery Procedures
-
-#### Database Corruption Recovery
+This project uses prefix `wf-` for workflow meta-development issues.
 
 ```bash
-# 1. Verify corruption
-sqlite3 .beads/*.db "PRAGMA integrity_check;"
-
-# 2. Backup corrupted database
-mkdir -p .beads/backup
-mv .beads/*.db .beads/backup/
-
-# 3. Recover from JSONL
-bd init --quiet
-bd import -i .beads/issues.jsonl
-
-# 4. Verify recovery
-bd list --json | jq '. | length'
+# Already initialized with
+bd init -p wf- --quiet
 ```
 
-#### Session State Recovery After Interruption
+## Related Files
 
-```bash
-# 1. Check for in-progress issues
-bd list --status in_progress
-
-# 2. Review state
-bd show [issue-id]
-
-# 3. Resume work
-/workflow-work
-# Select the in-progress issue
-
-# 4. Or mark as open and re-prioritize
-bd update [issue-id] --status open
-```
-
-#### Full Reset (Nuclear Option)
-
-Only use when other recovery methods fail:
-```bash
-# 1. Backup everything
-cp -r .beads .beads.backup-$(date +%s)
-
-# 2. Remove database
-rm .beads/*.db
-
-# 3. Reinitialize
-bd init --quiet
-
-# 4. Reimport from JSONL
-bd import -i .beads/issues.jsonl
-
-# 5. Verify
-bd list --json | jq '. | length'
-```
-
----
-
-### Quick Reference
-
-| Problem | Solution |
-|---------|----------|
-| Lost work (sandbox) | `bd sync --flush-only` then check .beads/issues.jsonl |
-| JSONL conflicts | Use `bd merge` tool |
-| Database out of sync | `bd import --force` |
-| Multi-machine sync | `bd sync` (full git sync) |
-| Confusing dependencies | `bd dep tree [id]` |
-| Stale issues | `bd stale --days 7` |
-| Database corruption | Recovery from JSONL backup |
-| Sandbox mode issues | Use `--sandbox` flag |
-
----
-
-### Getting Additional Help
-
-**Beads Documentation:**
-- [Beads Troubleshooting](https://github.com/steveyegge/beads/blob/main/docs/TROUBLESHOOTING.md)
-- [Beads Error Handling](https://github.com/steveyegge/beads/blob/main/docs/ERROR_HANDLING.md)
+- @CLAUDE.md.example - Template users copy to their projects
+- @README.md - User-facing documentation
+- @docs/QUICKSTART.md - Quick introduction for new users
+- @.claude/rules/ - All workflow rules and patterns

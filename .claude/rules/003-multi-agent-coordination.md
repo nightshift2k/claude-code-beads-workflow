@@ -89,7 +89,7 @@ Before modifying a file in multi-agent context:
 
 2. **Claim the file**: Create or update issue with file list
    ```bash
-   bd update [issue-id] --note "Claiming: target/file.go" --json
+   bd update [issue-id] --notes "Claiming: target/file.go" --json
    ```
 
 3. **Complete and release**: Mark complete when done
@@ -179,7 +179,7 @@ Rationale:
 
 ### Where to Document Decisions
 
-1. **In Beads issues**: Use `--note` to add decision context
+1. **In Beads issues**: Use `--notes` to add decision context
 2. **In design documents**: `docs/plans/` for architectural decisions
 3. **In code comments**: Only for non-obvious implementation choices
 4. **In @CLAUDE.md**: For project-wide patterns and conventions

@@ -13,8 +13,7 @@ This command validates the environment and initializes all required components.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
-workflow_precheck "workflow-init"
+uv run python .claude/lib/workflow.py precheck --name workflow-init
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -136,7 +135,6 @@ echo "Checking configuration files..."
 FILES=(
   "@CLAUDE.md"
   "@.claude/rules/001-project-principles.md"
-  "@.claude/lib/workflow-precheck.sh"
 )
 
 for file in "${FILES[@]}"; do

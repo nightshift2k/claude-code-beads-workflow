@@ -22,8 +22,7 @@ This command converts your implementation plan tasks into **self-contained** Bea
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
-workflow_precheck "workflow-track"
+uv run python .claude/lib/workflow.py precheck --name workflow-track
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -75,7 +74,7 @@ bd show $EPIC_ID --json
 
 **ALWAYS use both flags together:**
 ```bash
-bd $BD_FLAGS create "Task Title" --parent $EPIC_ID --force -t task -p 2 --description="..." --json
+bd --sandbox create "Task Title" --parent $EPIC_ID --force -t task -p 2 --description="..." --json
 ```
 
 ---
@@ -119,7 +118,7 @@ Expected: FAIL
 
 Create the issue with FULL content AND hierarchical ID:
 ```bash
-bd $BD_FLAGS create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
+bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 **Files:**
 - Modify: `pydo/models.py`
 - Create: `tests/test_models.py`
@@ -154,15 +153,15 @@ EOF
 EPIC_ID="pydo-abc"  # Replace with actual epic ID
 
 # Create all tasks in one batch with full descriptions and hierarchical IDs
-bd $BD_FLAGS create "Task 1: Project Setup" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
+bd --sandbox create "Task 1: Project Setup" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 1 content from plan]
 EOF
 )" --json && \
-bd $BD_FLAGS create "Task 2: Exceptions" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
+bd --sandbox create "Task 2: Exceptions" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 2 content from plan]
 EOF
 )" --json && \
-bd $BD_FLAGS create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
+bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 3 content from plan]
 EOF
 )" --json

@@ -93,8 +93,8 @@ if [ ! -d "$BOILERPLATE" ]; then
 fi
 
 # Verify required files exist
-if [ ! -f "$BOILERPLATE/CLAUDE.md" ]; then
-  echo "ERROR: CLAUDE.md not found in $BOILERPLATE"
+if [ ! -f "$BOILERPLATE/CLAUDE.md.example" ]; then
+  echo "ERROR: CLAUDE.md.example not found in $BOILERPLATE"
   exit 1
 fi
 
@@ -106,8 +106,8 @@ fi
 # Copy .claude directory (commands, rules, lib)
 cp -r "$BOILERPLATE/.claude" ~/pydo-validation-test/
 
-# Copy CLAUDE.md (main workflow instructions)
-cp "$BOILERPLATE/CLAUDE.md" ~/pydo-validation-test/
+# Copy CLAUDE.md.example to CLAUDE.md (main workflow instructions)
+cp "$BOILERPLATE/CLAUDE.md.example" ~/pydo-validation-test/CLAUDE.md
 
 # Copy the pydo design document
 mkdir -p ~/pydo-validation-test/docs/plans
@@ -134,18 +134,23 @@ ls -la .claude/
 # lib/
 # rules/
 
-# Verify command files (should be 9 workflow-*.md files)
+# Verify command files (should be 11 workflow-*.md files)
 ls .claude/commands/ | wc -l
-# Expected: 9
+# Expected: 11
 
 # Verify key files exist and are non-empty
 ls -lh .claude/commands/workflow-*.md | awk '{if ($5 == "0") print "ERROR: " $9 " is empty"; else print "OK: " $9}'
 
-# Verify lib/workflow-precheck.sh exists and contains functions
-if grep -q "workflow_precheck" .claude/lib/workflow-precheck.sh; then
-  echo "OK: workflow-precheck.sh contains expected functions"
+# Verify workflow.py exists and is valid
+if [ -f ".claude/lib/workflow.py" ]; then
+  echo "OK: workflow.py exists"
+  if uv run python -c "import ast; ast.parse(open('.claude/lib/workflow.py').read())" 2>/dev/null; then
+    echo "OK: workflow.py is valid Python"
+  else
+    echo "ERROR: workflow.py has syntax errors"
+  fi
 else
-  echo "ERROR: workflow-precheck.sh missing or incomplete"
+  echo "ERROR: workflow.py not found"
 fi
 
 # Verify pydo-design.md was copied
@@ -161,9 +166,9 @@ else
   echo "ERROR: pydo-design.md not found"
 fi
 
-# Count total files copied (should be around 14-16)
+# Count total files copied (should be around 16-18)
 find .claude docs CLAUDE.md -type f | wc -l
-# Expected: 14-16 files
+# Expected: 16-18 files
 ```
 
 ### 2.4 Customize CLAUDE.md for pydo
@@ -203,22 +208,26 @@ Verify your directory structure:
 ```
 ~/pydo-validation-test/
 ├── .claude/
-│   ├── commands/
+│   ├── commands/           # 11 workflow-*.md files
 │   │   ├── workflow-init.md
 │   │   ├── workflow-start.md
 │   │   ├── workflow-track.md
-│   │   ├── workflow-work.md
 │   │   ├── workflow-execute.md
+│   │   ├── workflow-work.md
 │   │   ├── workflow-land.md
 │   │   ├── workflow-check.md
-│   │   ├── workflow-questions.md
-│   │   └── workflow-health.md
+│   │   ├── workflow-health.md
+│   │   ├── workflow-question-ask.md
+│   │   ├── workflow-steer-research.md
+│   │   └── workflow-steer-correct.md
 │   ├── lib/
-│   │   ├── workflow-precheck.sh
-│   │   └── open-questions-template.md
+│   │   └── workflow.py     # Python workflow CLI tool (stdlib only)
 │   └── rules/
 │       ├── 001-project-principles.md
-│       └── 003-multi-agent-coordination.md
+│       ├── 003-multi-agent-coordination.md
+│       ├── 004-beads-json-patterns.md
+│       ├── 005-agent-dispatch.md
+│       └── 006-git-conventions.md
 ├── docs/
 │   └── plans/
 │       └── pydo-design.md
@@ -241,7 +250,7 @@ cd ~/pydo-validation-test
 claude
 ```
 
-**Session Recording:** To capture the session for review, use Claude Code's built-in `/export` command before exiting. This creates a clean, readable transcript. Avoid using the `script` command as it captures raw ANSI escape codes that make logs unreadable.
+**Session Recording:** Use Claude Code's `/export` command before exiting to save a clean transcript.
 
 ---
 
@@ -264,7 +273,11 @@ claude
 # Verify .beads directory was created
 ls -la .beads/
 # Expected: beads.db, config.yaml, metadata.json, README.md, .gitignore
-# Note: issues.jsonl is created later when issues are added
+# Note: issues.jsonl appears after first issue is created
+
+# Verify prefix is 8 chars or less (including hyphen)
+bd config | grep prefix
+# Expected: Shows prefix like "pydo-" (5 chars total)
 ```
 
 ### 4.2 Create Feature Epic
@@ -276,7 +289,7 @@ ls -la .beads/
 
 **Expected behavior:**
 - Creates a Beads epic issue
-- Returns epic ID (e.g., `bd-abc123`)
+- Returns epic ID (e.g., `pydo-abc`)
 - Epic is now trackable with `bd show <id>`
 
 **Checkpoint:** Verify epic created:
@@ -284,6 +297,10 @@ ls -la .beads/
 # List all Beads issues
 bd list --json
 # Expected: Shows the newly created epic with type="epic"
+
+# Save the epic ID for later use
+EPIC_ID=$(bd list --json | jq -r '.[0].id')
+echo "Epic ID: $EPIC_ID"
 ```
 
 Record the epic ID: `____________`
@@ -541,9 +558,9 @@ cd pydo && uv sync && uv run pytest -v
 bd list --json
 # Expected: All issues show correct status (completed, in_progress, etc.)
 
-# Verify changes persisted to JSONL
-bd sync --flush-only
-# Expected: Shows changes exported or "already in sync"
+# Verify JSONL file exists and contains issues
+ls -lh .beads/issues.jsonl
+# Expected: Shows non-empty file
 ```
 
 ---
@@ -598,8 +615,6 @@ bd list --status in_progress --json
 
 **Step 2: Force-quit Claude Code**
 
-**Important**: If using `script` for recording (from Part 3.1), the recording will ALSO be interrupted. You'll need to restart it in append mode after the force-quit.
-
 Choose one method to force-quit:
 - **Option A**: Press `Ctrl+C` twice rapidly (force quit)
 - **Option B**: Close the terminal window directly
@@ -607,27 +622,14 @@ Choose one method to force-quit:
 
 **Important**: Do NOT use `/workflow-land` - we're simulating a crash/interruption.
 
-**Step 3: Restart session recording (if using script)**
-
-If you were recording with `script` in Part 3.1, restart it in append mode:
-
-```bash
-cd ~/pydo-validation-test
-
-# Restart script in APPEND mode to continue recording
-script -a pydo-validation-session.log
-
-# The -a flag appends to the existing log instead of overwriting
-```
-
-**Step 4: Restart Claude Code**
+**Step 3: Restart Claude Code**
 
 ```bash
 # Now start Claude Code again
 claude
 ```
 
-**Step 5: Verify recovery**
+**Step 4: Verify recovery**
 
 Tell Claude:
 ```
@@ -642,9 +644,87 @@ Tell Claude:
 
 **Checkpoint:**
 ```bash
-# Verify the in-progress issue persisted across the interruption
+# Verify the in-progress issue persisted
 bd list --status in_progress --json
-# Expected: Shows the same issue from Step 1 with status="in_progress"
+# Expected: Shows the same claimed issue with status="in_progress"
+```
+
+---
+
+### 9.4 Test Research Question Workflow
+
+This tests the interactive research question capture and resolution workflow.
+
+**Step 1: Capture a research question**
+
+Tell Claude:
+```
+/workflow-question-ask Should we use SQLite or DuckDB for analytics queries in pydo?
+```
+
+**Expected behavior:**
+- Claude asks clarifying questions (context, impact, owner, due date, initial research)
+- Claude identifies potentially blocked issues (e.g., storage implementation tasks)
+- Claude presents a summary for confirmation
+- Claude creates a Beads issue with type=task and full context in description
+- Claude establishes blocking dependencies on relevant tasks
+
+**Checkpoint:**
+```bash
+# Verify research issue was created
+bd list --json | jq '.[] | select(.title | contains("Research:"))'
+# Expected: Shows research issue with full description
+
+# Record the research issue ID
+RESEARCH_ID=$(bd list --json | jq -r '.[] | select(.title | contains("Research:")) | .id' | head -1)
+echo "Research issue: $RESEARCH_ID"
+
+# Verify blocking dependencies were established
+bd show $RESEARCH_ID --json | jq '.[0].blocks'
+# Expected: Shows IDs of blocked tasks
+```
+
+**Step 2: Resolve the research question**
+
+Tell Claude:
+```
+/workflow-steer-research $RESEARCH_ID
+```
+
+(Replace `$RESEARCH_ID` with the actual ID from Step 1)
+
+**Expected behavior:**
+- Claude loads the research context from the issue
+- Claude conducts research (may use web search, documentation lookup)
+- Claude updates blocked tasks with research findings
+- Claude closes the research issue with resolution summary
+
+**Checkpoint:**
+```bash
+# Verify research issue is closed
+bd show $RESEARCH_ID --json | jq '.[0].status'
+# Expected: "completed"
+
+# Verify blocked tasks were updated
+bd show $RESEARCH_ID --json | jq '.[0].blocks[]' | while read blocked_id; do
+  bd show "$blocked_id" --json | jq '.[0].notes'
+done
+# Expected: Shows research findings in task notes
+```
+
+**Step 3: Course correction (brief mention)**
+
+The `/workflow-steer-correct` command handles human-spotted divergence during implementation. This is typically used when:
+- Human reviews work-in-progress and spots an issue
+- AI has gone off-track during implementation
+- Requirements need mid-implementation adjustment
+
+We won't test this in the validation (requires simulating divergence), but verify the command exists:
+
+```bash
+# Verify command file exists
+ls -lh .claude/commands/workflow-steer-correct.md
+# Expected: Shows the command file
 ```
 
 ---
@@ -704,14 +784,18 @@ bd show <epic-id>
 
 Check each item that worked correctly:
 
-**Workflow Commands:**
+**Workflow Commands (All 11):**
 - [ ] `/workflow-init` - Environment initialized correctly
 - [ ] `/workflow-start` - Epic created with proper tracking
 - [ ] `/workflow-track` - Plan converted to issues with dependencies
+- [ ] `/workflow-execute` - Automated plan execution worked (or skipped if using manual approach)
 - [ ] `/workflow-work` - Found and claimed available work
 - [ ] `/workflow-check` - Status review worked
 - [ ] `/workflow-land` - Session closed properly with sync
 - [ ] `/workflow-health` - Diagnostics ran and reported accurately
+- [ ] `/workflow-question-ask` - Research question captured and issue created
+- [ ] `/workflow-steer-research` - Research issue resolved and tasks updated
+- [ ] `/workflow-steer-correct` - Command exists (not fully tested in validation)
 
 **Beads Integration:**
 - [ ] Issues created with proper types (epic, task)
@@ -773,14 +857,14 @@ Return to the original Claude Code session with:
 After `/workflow-track`, your Beads issues should look approximately like:
 
 ```
-bd-xxx (epic): Build pydo CLI task manager
-├── bd-xxx.1 (task): Set up project structure
-├── bd-xxx.2 (task): Implement Task model [depends: xxx.1]
-├── bd-xxx.3 (task): Implement exceptions [depends: xxx.1]
-├── bd-xxx.4 (task): Implement storage layer [depends: xxx.2, xxx.3]
-├── bd-xxx.5 (task): Implement CLI commands [depends: xxx.4]
-├── bd-xxx.6 (task): Write test suite [depends: xxx.5]
-└── bd-xxx.7 (task): Documentation and polish [depends: xxx.6]
+pydo-abc (epic): Build pydo CLI task manager
+├── pydo-abc.1 (task): Set up project structure
+├── pydo-abc.2 (task): Implement Task model [depends: abc.1]
+├── pydo-abc.3 (task): Implement exceptions [depends: abc.1]
+├── pydo-abc.4 (task): Implement storage layer [depends: abc.2, abc.3]
+├── pydo-abc.5 (task): Implement CLI commands [depends: abc.4]
+├── pydo-abc.6 (task): Write test suite [depends: abc.5]
+└── pydo-abc.7 (task): Documentation and polish [depends: abc.6]
 ```
 
 ## Appendix B: Troubleshooting
@@ -802,9 +886,11 @@ bd init --quiet
 
 ### "database out of sync"
 ```bash
-# Sandbox mode is used by default for Claude Code
-# If you see this error, try:
+# Rebuild database from JSONL
 bd import --force
+
+# Note: Sandbox mode is required for Claude Code environments
+# All bd commands should use --sandbox flag in Claude Code
 ```
 
 ### Tests fail to run

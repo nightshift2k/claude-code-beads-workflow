@@ -65,6 +65,17 @@ bd create "Task" --parent $EPIC_ID --force -t task --json
 # Creates: pydo-abc.1, pydo-abc.2, etc.
 ```
 
+### Flag Spelling: `--notes` not `--note`
+
+The flag is **plural**:
+```bash
+# WRONG - unknown flag error
+bd update $ID --note "Progress update" --json
+
+# RIGHT - plural form
+bd update $ID --notes "Progress update" --json
+```
+
 ### Prefix Requirements
 
 - Maximum 8 characters (including trailing hyphen)

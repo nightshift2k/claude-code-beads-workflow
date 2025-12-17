@@ -13,8 +13,7 @@ This command creates a Beads epic to track the entire feature lifecycle.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
-workflow_precheck "workflow-start"
+uv run python .claude/lib/workflow.py precheck --name workflow-start
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -43,7 +42,7 @@ echo ""
 
 **Step 1a:** Create the epic (run this first):
 ```bash
-bd $BD_FLAGS create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json
+bd --sandbox create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json
 ```
 
 **Step 1b:** Extract the epic ID from the JSON output above:
@@ -136,7 +135,6 @@ For features touching more than 3 files, consider using the brainstorming skill 
 **If epic creation fails:**
 ```bash
 # Run quick diagnostics
-source @.claude/lib/workflow-precheck.sh && workflow_quick_diagnose "epic-creation"
 ```
 
 See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.

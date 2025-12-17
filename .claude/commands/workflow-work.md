@@ -13,7 +13,6 @@ This command helps you find and properly claim work from the Beads issue trackin
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
 workflow_precheck "workflow-work"
 ```
 
@@ -28,21 +27,21 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 **1. Ready Work Detection**: Find unblocked issues available for work
 ```bash
 # Get all ready issues
-bd $BD_FLAGS ready --json
+bd  ready --json
 
 # Parse with jq (note: returns array)
-bd $BD_FLAGS ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
+bd  ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```
 
 **2. Work Selection**: Review available work with context and priority
    - Examine issue descriptions and priorities
-   - Check dependencies with `bd $BD_FLAGS dep tree [issue-id]`
+   - Check dependencies with `bd  dep tree [issue-id]`
    - Select the most appropriate issue to work on
 
 **3. Status Update**: Claim the selected issue by updating to "in_progress"
 ```bash
 # Update status (note: use .[0] for single result)
-bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
+bd  update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
 ```
 
 **4. Context Setup**: Review any related documentation or specifications
@@ -50,7 +49,7 @@ bd $BD_FLAGS update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.i
    - Review project context in @CLAUDE.md and project rules
 
 **5. Execute with Specialized Agent**: Dispatch to appropriate agent
-   - Read the full issue description with `bd $BD_FLAGS show [issue-id]`
+   - Read the full issue description with `bd  show [issue-id]`
    - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
 
 <task_checkpoint_critical>
@@ -62,7 +61,7 @@ git add .
 git commit -m "type(scope): [issue-id] description"
 
 # 2. Close the issue
-bd $BD_FLAGS close [issue-id] --reason "Completed: [summary]" --json
+bd  close [issue-id] --reason "Completed: [summary]" --json
 
 # 3. STOP HERE - Do NOT continue to next task
 ```
@@ -102,14 +101,20 @@ See @.claude/rules/006-git-conventions.md for commit message format.
 **If `bd ready` returns no issues:**
 ```bash
 # Check for blocked issues
-bd $BD_FLAGS blocked
+bd  blocked
 
 # View all open issues
-bd $BD_FLAGS list --status open
+bd  list --status open
 
 # Check for stale issues that need attention
-bd $BD_FLAGS stale --days 7
+bd  stale --days 7
 ```
+
+**If issues are blocked by research questions:**
+- Use `/workflow-steer-research` to resolve research and unblock tasks
+
+**If AI has diverged during implementation:**
+- Use `/workflow-steer-correct` to create course correction task
 
 See @CLAUDE.md for troubleshooting solutions.
 

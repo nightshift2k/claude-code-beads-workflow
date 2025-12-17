@@ -6,7 +6,7 @@ A structured workflow template for agentic AI development using [Beads](https://
 
 This template provides a complete workflow for AI-assisted development with:
 
-- **9 slash commands** for workflow management
+- **11 slash commands** for workflow management
 - **Beads integration** for issue tracking and dependencies
 - **Multi-agent coordination** rules to prevent conflicts
 - **Session management** with proper state persistence
@@ -15,6 +15,8 @@ This template provides a complete workflow for AI-assisted development with:
 Designed for [Claude Code](https://claude.ai/claude-code) but adaptable to other AI assistants with slash command support.
 
 ## Quick Start
+
+> **New to this workflow?** See [docs/QUICKSTART.md](docs/QUICKSTART.md) for a 5-minute introduction.
 
 ```bash
 # 1. Clone or copy this template
@@ -43,7 +45,9 @@ bd init -p myproj- --quiet
 | `/workflow-work` | Find and claim available work |
 | `/workflow-land` | Complete session properly (required before stopping) |
 | `/workflow-check` | Review current project status |
-| `/workflow-questions` | Track and resolve open questions |
+| `/workflow-question-ask` | Interactive research question capture |
+| `/workflow-steer-research` | Resolve research and update blocked tasks |
+| `/workflow-steer-correct` | Course correction mid-implementation |
 | `/workflow-health` | Diagnose workflow issues |
 
 ## Workflow Lifecycle
@@ -61,10 +65,9 @@ bd init -p myproj- --quiet
 ```
 your-project/
 ├── .claude/
-│   ├── commands/           # 9 workflow slash commands
-│   ├── lib/                # Shared utilities and templates
-│   │   ├── workflow-precheck.sh
-│   │   └── open-questions-template.md
+│   ├── commands/           # 11 workflow slash commands
+│   ├── lib/                # Shared utilities
+│   │   └── workflow.py     # Python workflow CLI tool (stdlib only)
 │   └── rules/              # Project rules and principles
 │       ├── 001-project-principles.md
 │       ├── 003-multi-agent-coordination.md
@@ -73,7 +76,8 @@ your-project/
 │       └── 006-git-conventions.md
 ├── docs/
 │   └── plans/              # Design documents and implementation plans
-├── CLAUDE.md               # Main workflow instructions
+├── CLAUDE.md               # Your project's workflow instructions (copy from CLAUDE.md.example)
+├── CLAUDE.md.example       # Template to copy for new projects
 └── README.md
 ```
 
@@ -81,7 +85,7 @@ your-project/
 
 After copying this template, customize for your project:
 
-1. **Edit `CLAUDE.md`** - Update the `<project_context>` section with your project details
+1. **Replace `CLAUDE.md`** - Remove the meta-project version and copy `CLAUDE.md.example` to `CLAUDE.md`, then update the `<project_context>` section with your project details
 2. **Review rules** - Adjust `.claude/rules/001-project-principles.md` for your standards
 3. **Add design docs** - Place implementation plans in `docs/plans/`
 

@@ -13,18 +13,10 @@ This command acts as a wrapper for the executing-plans skill, ensuring proper tr
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-source @.claude/lib/workflow-precheck.sh
-workflow_precheck "workflow-execute"
+uv run python .claude/lib/workflow.py precheck --name workflow-execute
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
-
-### Setup Interruption Handler
-
-Set up cleanup trap to handle unexpected interruptions:
-```bash
-trap 'workflow_cleanup "workflow-execute"' EXIT INT TERM
-```
 
 ### Validate Plan File Argument
 
@@ -67,7 +59,7 @@ echo ""
 **2. Issue Sync**: Ensure Beads issues exist for tracking (via `/workflow-track` if not already done)
 ```bash
 # Check if issues already exist for this plan
-bd $BD_FLAGS list --json | grep -q "$PLAN_FILE" || echo "Consider running /workflow-track first"
+uv run python .claude/lib/workflow.py list --json | grep -q "$PLAN_FILE" || echo "Consider running /workflow-track first"
 ```
 
 **3. Invoke Executing-Plans Skill**: Use the superpowers skill for quality execution
@@ -82,10 +74,10 @@ Additional instructions for execution:
 ```
 
 **4. Beads Integration During Execution**: For each task in the plan:
-   - Mark issue as in_progress: `bd $BD_FLAGS update [id] --status in_progress`
+   - Mark issue as in_progress: `uv run python .claude/lib/workflow.py update [id] --status in_progress`
    - Execute the task using appropriate domain-specific agent
-   - Create follow-up issues for discoveries: `bd $BD_FLAGS create "Discovered: [issue]" --deps discovered-from:[current-id]`
-   - Mark issue as closed: `bd $BD_FLAGS close [id] --reason "[completion note]"`
+   - Create follow-up issues for discoveries: `bd --sandbox create "Discovered: [issue]" --deps discovered-from:[current-id]`
+   - Mark issue as closed: `uv run python .claude/lib/workflow.py close [id] "[completion note]"`
 
 **5. Version Control**: Commit after EACH task completion
 ```bash
@@ -125,10 +117,10 @@ For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordinat
 **If execution encounters issues:**
 ```bash
 # Check current work state
-bd $BD_FLAGS list --status in_progress --json | jq -r '.[] | "[\(.id)] \(.title)"'
+uv run python .claude/lib/workflow.py list --status in_progress --json
 
 # Check for blocked dependencies
-bd $BD_FLAGS blocked --json
+uv run python .claude/lib/workflow.py list --blocked --json
 
 # Verify plan file is readable
 cat "$PLAN_FILE" | head -20
