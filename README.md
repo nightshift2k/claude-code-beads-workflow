@@ -64,10 +64,11 @@ bd init -p myproj- --quiet
 
 ```
 your-project/
+├── _claude/
+│   └── lib/                # Shared utilities
+│       └── workflow.py     # Python workflow CLI tool (stdlib only)
 ├── .claude/
 │   ├── commands/           # 11 workflow slash commands
-│   ├── lib/                # Shared utilities
-│   │   └── workflow.py     # Python workflow CLI tool (stdlib only)
 │   └── rules/              # Project rules and principles
 │       ├── 001-project-principles.md
 │       ├── 003-multi-agent-coordination.md

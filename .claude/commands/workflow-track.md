@@ -22,7 +22,7 @@ This command converts your implementation plan tasks into **self-contained** Bea
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-track
+uv run python _claude/lib/workflow.py precheck --name workflow-track
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.

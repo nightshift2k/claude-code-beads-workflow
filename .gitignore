@@ -42,3 +42,6 @@ npm-debug.log*
 *.temp
 .cache/
 tmp/
+
+# Serena MCP cache
+.serena/

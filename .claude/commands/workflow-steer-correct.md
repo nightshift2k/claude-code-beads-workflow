@@ -18,7 +18,7 @@ Example: `/workflow-steer-correct pydo-nh9.4` (specific task)
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-steer-correct
+uv run python _claude/lib/workflow.py precheck --name workflow-steer-correct
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -33,7 +33,7 @@ This command guides you through an interactive course correction workflow. Follo
 
 Get the issue details to determine if it's an epic or task:
 ```bash
-uv run python .claude/lib/workflow.py show $EPIC_OR_TASK --json
+uv run python _claude/lib/workflow.py show $EPIC_OR_TASK --json
 ```
 
 From the output, identify:
@@ -45,7 +45,7 @@ From the output, identify:
 
 Display epic progress using the show-tasks command:
 ```bash
-uv run python .claude/lib/workflow.py show-tasks $EPIC_ID
+uv run python _claude/lib/workflow.py show-tasks $EPIC_ID
 ```
 
 Then calculate and display:
@@ -55,13 +55,13 @@ Then calculate and display:
 
 Show completed tasks:
 ```bash
-uv run python .claude/lib/workflow.py list --status closed --json
+uv run python _claude/lib/workflow.py list --status closed --json
 ```
 Filter output to show only tasks starting with `$EPIC_ID.`
 
 Show remaining tasks:
 ```bash
-uv run python .claude/lib/workflow.py list --status open --json
+uv run python _claude/lib/workflow.py list --status open --json
 ```
 Filter output to show only tasks starting with `$EPIC_ID.`
 
@@ -100,7 +100,7 @@ Wait for human response. Parse the input:
 
 Get affected task details:
 ```bash
-uv run python .claude/lib/workflow.py show <task-id> --json
+uv run python _claude/lib/workflow.py show <task-id> --json
 ```
 
 **5. Categorize Impact**
@@ -140,7 +140,7 @@ Wait for confirmation. If not confirmed, exit.
 
 Create a P0 correction task under the epic:
 ```bash
-uv run python .claude/lib/workflow.py show $EPIC_ID --json
+uv run python _claude/lib/workflow.py show $EPIC_ID --json
 ```
 
 Extract epic details, then create child task with full description:
@@ -170,11 +170,11 @@ Note: The Python workflow tool `bd_create()` handles parent relationships. Store
 For each task to reopen:
 ```bash
 # Add note explaining reopen
-uv run python .claude/lib/workflow.py update $TASK_ID \
+uv run python _claude/lib/workflow.py update $TASK_ID \
   --notes "Reopened for course correction: $CORRECTION_DESC (see $CORRECTION_ID)"
 
 # Change status to open
-uv run python .claude/lib/workflow.py update $TASK_ID --status open
+uv run python _claude/lib/workflow.py update $TASK_ID --status open
 
 # Add blocking dependency (use bd dep directly - not in Python tool yet)
 bd --sandbox dep add $TASK_ID $CORRECTION_ID
@@ -188,7 +188,7 @@ For each task to update, append correction context to description:
 
 Get current description:
 ```bash
-uv run python .claude/lib/workflow.py show $TASK_ID --json
+uv run python _claude/lib/workflow.py show $TASK_ID --json
 ```
 
 Append to description:
@@ -202,7 +202,7 @@ Append to description:
 
 Update the task:
 ```bash
-uv run python .claude/lib/workflow.py update $TASK_ID --description="<new_description>"
+uv run python _claude/lib/workflow.py update $TASK_ID --description="<new_description>"
 
 # Add blocking dependency
 bd --sandbox dep add $TASK_ID $CORRECTION_ID
@@ -226,7 +226,7 @@ Ready work (correction-first):
 
 Show ready work (correction will be P0, so it appears first):
 ```bash
-uv run python .claude/lib/workflow.py ready
+uv run python _claude/lib/workflow.py ready
 ```
 
 Display:
@@ -285,11 +285,11 @@ Human discovers: "Storage uses JSON but should use SQLite!"
 **If epic/task not found:**
 ```bash
 # List active epics
-uv run python .claude/lib/workflow.py list --json
+uv run python _claude/lib/workflow.py list --json
 # Filter for type=epic, status=open
 
 # Show tasks for epic
-uv run python .claude/lib/workflow.py show-tasks $EPIC_ID
+uv run python _claude/lib/workflow.py show-tasks $EPIC_ID
 ```
 
 **If no tasks are affected:**

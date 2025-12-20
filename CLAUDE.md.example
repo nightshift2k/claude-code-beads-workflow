@@ -314,8 +314,7 @@ All workflow commands now include automatic environment validation. If you encou
 
 **Manual precheck** (if needed):
 ```bash
-source .claude/lib/workflow-precheck.sh
-workflow_precheck "manual-check"
+uv run python _claude/lib/workflow.py precheck --name manual-check
 ```
 
 ---

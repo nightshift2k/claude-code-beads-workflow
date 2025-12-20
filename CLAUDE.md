@@ -1,5 +1,13 @@
 # Claude Code Beads Workflow - Meta Project
 
+> **⚠️ CRITICAL: Read MCP preferences before any file operations**
+> 
+> @~/.claude/MCP_Usage_Preferences.md
+> 
+> - **Code structure analysis** → Use Serena (not Read/Grep)
+> - **Multi-file or pattern edits** → Use Morphllm (not Edit)
+> - **Previous session context** → Use Claude-Mem (not re-reading files)
+
 ## Project Information
 
 ```
@@ -57,10 +65,11 @@ Apply Strunk's rules:
 ## Project Structure
 
 ```
+_claude/
+└── lib/                # Shared utilities
+    └── workflow.py     # Python workflow CLI tool (stdlib only)
 .claude/
 ├── commands/           # 11 workflow slash commands
-├── lib/                # Shared utilities
-│   └── workflow.py     # Python workflow CLI tool (stdlib only)
 └── rules/              # Project rules and principles
     ├── 001-project-principles.md
     ├── 003-multi-agent-coordination.md

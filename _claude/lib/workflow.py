@@ -2,7 +2,7 @@
 """
 Agentic workflow utilities for Claude Code.
 
-Single-file CLI tool replacing all bash scripts. Runs via: uv run python .claude/lib/workflow.py <command>
+Single-file CLI tool replacing all bash scripts. Runs via: uv run python _claude/lib/workflow.py <command>
 
 stdlib only - no external dependencies.
 """
@@ -24,12 +24,29 @@ from typing import Any, Optional
 # ============================================================================
 
 def sanitize_json_string(s: str) -> str:
-    """Escape string content using JSON encoding."""
+    """Escape string content using JSON encoding.
+    
+    Args:
+        s: The string to escape.
+        
+    Returns:
+        The escaped string with JSON-safe characters.
+    """
     return json.dumps(s)[1:-1]
 
 
 def sanitize_json(text: str) -> str:
-    """Escape unescaped control characters inside JSON string values."""
+    """Escape unescaped control characters inside JSON string values.
+    
+    Workaround for Beads CLI bug that outputs invalid JSON with unescaped
+    control characters. See: https://github.com/steveyegge/beads/issues/599
+    
+    Args:
+        text: Raw JSON text that may contain unescaped control characters.
+        
+    Returns:
+        Sanitized JSON text safe for parsing.
+    """
     result = []
     in_string = False
     escaped = False
@@ -66,7 +83,18 @@ class BeadsError(Exception):
 
 
 def run_bd(*args: str, check: bool = True) -> subprocess.CompletedProcess:
-    """Execute bd command with --sandbox flag."""
+    """Execute bd command with --sandbox flag.
+    
+    Args:
+        *args: Command arguments to pass to bd CLI.
+        check: If True, raise BeadsError on non-zero exit code.
+        
+    Returns:
+        CompletedProcess with stdout, stderr, and returncode.
+        
+    Raises:
+        BeadsError: If check=True and command exits with non-zero status.
+    """
     cmd = ["bd", "--sandbox", *args]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if check and result.returncode != 0:
@@ -75,7 +103,17 @@ def run_bd(*args: str, check: bool = True) -> subprocess.CompletedProcess:
 
 
 def bd_json(*args: str) -> Any:
-    """Run bd command and return parsed JSON."""
+    """Run bd command and return parsed JSON.
+    
+    Args:
+        *args: Command arguments (--json is appended automatically).
+        
+    Returns:
+        Parsed JSON response from bd command.
+        
+    Raises:
+        BeadsError: If command fails or JSON is invalid.
+    """
     result = run_bd(*args, "--json")
     sanitized = sanitize_json(result.stdout)
     try:
@@ -85,7 +123,19 @@ def bd_json(*args: str) -> Any:
 
 
 def bd_show(issue_id: str) -> dict:
-    """Get issue details. Returns first result (bd show returns array)."""
+    """Get issue details by ID.
+    
+    Note: bd show returns an array; this returns the first element.
+    
+    Args:
+        issue_id: The Beads issue ID (e.g., 'pydo-abc').
+        
+    Returns:
+        Issue dictionary with id, title, status, description, etc.
+        
+    Raises:
+        BeadsError: If issue not found.
+    """
     results = bd_json("show", issue_id)
     if not results:
         raise BeadsError(f"Issue not found: {issue_id}")
@@ -93,7 +143,15 @@ def bd_show(issue_id: str) -> dict:
 
 
 def bd_list(status: Optional[str] = None, limit: Optional[int] = None) -> list:
-    """List issues with optional filters."""
+    """List issues with optional filters.
+    
+    Args:
+        status: Filter by status ('open', 'in_progress', 'closed').
+        limit: Maximum number of issues to return.
+        
+    Returns:
+        List of issue dictionaries.
+    """
     args = ["list"]
     if status:
         args.extend(["--status", status])
@@ -103,17 +161,42 @@ def bd_list(status: Optional[str] = None, limit: Optional[int] = None) -> list:
 
 
 def bd_ready() -> list:
-    """Get ready (unblocked) issues."""
+    """Get ready (unblocked) issues available for work.
+    
+    Returns:
+        List of issue dictionaries that have no blocking dependencies.
+    """
     return bd_json("ready")
 
 
 def bd_blocked() -> list:
-    """Get blocked issues with their blockers."""
+    """Get blocked issues with their blockers.
+    
+    Returns:
+        List of issue dictionaries including 'blocked_by' field.
+    """
     return bd_json("blocked")
 
 
 def bd_create(title: str, **kwargs) -> dict:
-    """Create new issue. Returns the created issue (object, not array)."""
+    """Create a new Beads issue.
+    
+    Note: bd create returns an object (not array like other commands).
+    
+    Args:
+        title: Issue title/summary.
+        **kwargs: Optional parameters:
+            - type: Issue type ('epic', 'task', 'bug').
+            - priority: Priority level (0-4).
+            - parent: Parent issue ID for hierarchical issues.
+            - description: Full issue description.
+            
+    Returns:
+        Created issue dictionary with assigned ID.
+        
+    Raises:
+        BeadsError: If creation fails.
+    """
     args = ["create", title]
     if "type" in kwargs:
         args.extend(["-t", kwargs["type"]])
@@ -127,7 +210,18 @@ def bd_create(title: str, **kwargs) -> dict:
 
 
 def bd_update(issue_id: str, **kwargs) -> list:
-    """Update issue. Returns affected issues (array)."""
+    """Update an existing issue.
+    
+    Args:
+        issue_id: The issue ID to update.
+        **kwargs: Fields to update:
+            - status: New status ('open', 'in_progress', 'closed').
+            - notes: Notes to append.
+            - description: New description.
+            
+    Returns:
+        List of affected issue dictionaries.
+    """
     args = ["update", issue_id]
     if "status" in kwargs:
         args.extend(["--status", kwargs["status"]])
@@ -139,22 +233,47 @@ def bd_update(issue_id: str, **kwargs) -> list:
 
 
 def bd_close(issue_id: str, reason: str) -> list:
-    """Close issue with reason."""
+    """Close an issue with a reason.
+    
+    Args:
+        issue_id: The issue ID to close.
+        reason: Closure reason (stored in issue history).
+        
+    Returns:
+        List of affected issue dictionaries.
+    """
     return bd_json("close", issue_id, "--reason", reason)
 
 
 def bd_dep_add(blocked_id: str, blocking_id: str) -> None:
-    """Add dependency: blocked_id is blocked by blocking_id."""
+    """Add a blocking dependency between issues.
+    
+    Args:
+        blocked_id: The issue that will be blocked.
+        blocking_id: The issue that blocks completion.
+    """
     run_bd("dep", "add", blocked_id, blocking_id)
 
 
 def bd_dep_remove(blocked_id: str, blocking_id: str) -> None:
-    """Remove dependency."""
+    """Remove a blocking dependency between issues.
+    
+    Args:
+        blocked_id: The previously blocked issue.
+        blocking_id: The issue that was blocking.
+    """
     run_bd("dep", "remove", blocked_id, blocking_id, check=False)
 
 
 def bd_stale(days: int = 7) -> list:
-    """Get stale issues older than N days."""
+    """Get stale issues older than N days.
+    
+    Args:
+        days: Number of days threshold for staleness.
+        
+    Returns:
+        List of stale issue dictionaries.
+    """
     return bd_json("stale", "--days", str(days))
 
 
@@ -163,7 +282,14 @@ def bd_stale(days: int = 7) -> list:
 # ============================================================================
 
 def check_command(cmd: str) -> tuple[bool, str]:
-    """Check if command exists. Returns (exists, version_or_error)."""
+    """Check if a command exists in PATH.
+    
+    Args:
+        cmd: Command name to check (e.g., 'bd', 'git').
+        
+    Returns:
+        Tuple of (exists: bool, version_or_error: str).
+    """
     try:
         result = subprocess.run([cmd, "--version"], capture_output=True, text=True)
         version = re.search(r'v?[\d.]+', result.stdout or result.stderr)
@@ -173,7 +299,13 @@ def check_command(cmd: str) -> tuple[bool, str]:
 
 
 def check_environment() -> list[str]:
-    """Validate environment. Returns list of errors (empty if OK)."""
+    """Validate workflow environment prerequisites.
+    
+    Checks for required commands (bd, git) and .beads directory.
+    
+    Returns:
+        List of error messages (empty if environment is valid).
+    """
     errors = []
 
     # Check bd CLI
@@ -201,7 +333,15 @@ def check_environment() -> list[str]:
 
 
 def precheck(command_name: str, interactive: bool = False) -> bool:
-    """Run validation and optionally prompt for fixes. Returns True if OK."""
+    """Run environment validation before a workflow command.
+    
+    Args:
+        command_name: Name of command for error messages.
+        interactive: If True, prompt user to fix issues.
+        
+    Returns:
+        True if environment is valid, False otherwise.
+    """
     errors = check_environment()
 
     if not errors:
@@ -230,7 +370,12 @@ def precheck(command_name: str, interactive: bool = False) -> bool:
 # ============================================================================
 
 def steering_show_tasks(epic_id_or_issues: str | list) -> None:
-    """Display tasks in a formatted table."""
+    """Display tasks in a formatted ASCII table.
+    
+    Args:
+        epic_id_or_issues: Either an epic ID (str) to find children,
+            or a list of issue dictionaries to display directly.
+    """
     print("  ┌──────────────┬─────────────────────────────────┬──────────────┐")
     print("  │ Task         │ Title                           │ Status       │")
     print("  ├──────────────┼─────────────────────────────────┼──────────────┤")
@@ -248,7 +393,14 @@ def steering_show_tasks(epic_id_or_issues: str | list) -> None:
 
 
 def steering_find_affected(blocking_id: str) -> list:
-    """Find tasks blocked by the given issue."""
+    """Find tasks blocked by a given issue.
+    
+    Args:
+        blocking_id: The issue ID that may be blocking others.
+        
+    Returns:
+        List of issue dictionaries that are blocked by this issue.
+    """
     return [
         issue for issue in bd_blocked()
         if blocking_id in issue.get("blocked_by", [])
@@ -256,7 +408,11 @@ def steering_find_affected(blocking_id: str) -> list:
 
 
 def steering_show_impact(affected: list) -> None:
-    """Display impact table for affected tasks."""
+    """Display impact table for affected tasks.
+    
+    Args:
+        affected: List of affected issue dictionaries.
+    """
     print("  Affected tasks:")
     print("  ┌──────────────┬─────────────────────────────────┬──────────────┐")
     print("  │ Task         │ Impact                          │ Action       │")
@@ -269,7 +425,14 @@ def steering_show_impact(affected: list) -> None:
 
 
 def steering_update_task(issue_id: str, additional_content: str) -> None:
-    """Append steering update to task description."""
+    """Append a steering update to a task's description.
+    
+    Adds timestamped steering content separated by a horizontal rule.
+    
+    Args:
+        issue_id: The issue ID to update.
+        additional_content: Markdown content to append.
+    """
     task = bd_show(issue_id)
     current_desc = task.get("description", "")
 
@@ -285,12 +448,24 @@ def steering_update_task(issue_id: str, additional_content: str) -> None:
 
 
 def steering_add_note(issue_id: str, note: str) -> None:
-    """Add note to issue."""
+    """Add a note to an issue.
+    
+    Args:
+        issue_id: The issue ID to update.
+        note: Note text to add.
+    """
     bd_update(issue_id, notes=note)
 
 
 def steering_list_blocked(blocking_id: str) -> list:
-    """List tasks blocked by the given issue."""
+    """List tasks blocked by a given issue.
+    
+    Args:
+        blocking_id: The issue ID that may be blocking others.
+        
+    Returns:
+        List of issue dictionaries blocked by this issue.
+    """
     return [
         issue for issue in bd_blocked()
         if blocking_id in issue.get("blocked_by", [])
@@ -298,7 +473,13 @@ def steering_list_blocked(blocking_id: str) -> list:
 
 
 def steering_summary(updated: int, reopened: int = 0, created: int = 0) -> None:
-    """Print steering completion summary."""
+    """Print steering completion summary.
+    
+    Args:
+        updated: Count of updated tasks.
+        reopened: Count of reopened tasks.
+        created: Count of newly created tasks.
+    """
     print()
     print("  ✅ Steering complete")
     print("  ──────────────────────────────")
@@ -316,7 +497,14 @@ def steering_summary(updated: int, reopened: int = 0, created: int = 0) -> None:
 # ============================================================================
 
 def run_health_check() -> dict:
-    """Run comprehensive health check. Returns status dict."""
+    """Run comprehensive workflow health diagnostics.
+    
+    Checks environment, Beads status, issue counts, and git state.
+    
+    Returns:
+        Dictionary with keys: environment, beads, issues, git, overall.
+        'overall' is one of: 'HEALTHY', 'DEGRADED', 'CRITICAL'.
+    """
     results = {
         "environment": {},
         "beads": {},
@@ -382,7 +570,11 @@ def run_health_check() -> dict:
 
 
 def print_health_report(results: dict) -> None:
-    """Print formatted health report."""
+    """Print formatted health check report to stdout.
+    
+    Args:
+        results: Health check results from run_health_check().
+    """
     print("=== Workflow Health Check ===")
     print()
 
@@ -448,7 +640,14 @@ def print_health_report(results: dict) -> None:
 # ============================================================================
 
 def derive_prefix(project_name: str) -> str:
-    """Derive short prefix from project name."""
+    """Derive a short Beads prefix from project name.
+    
+    Args:
+        project_name: Project directory name.
+        
+    Returns:
+        Sanitized prefix (6 chars max + hyphen), or empty string if invalid.
+    """
     clean = re.sub(r'[^a-z0-9]', '', project_name.lower())
     return clean[:6] + "-" if len(clean) >= 2 else ""
 
@@ -458,21 +657,42 @@ def derive_prefix(project_name: str) -> str:
 # ============================================================================
 
 def cmd_precheck(args: argparse.Namespace) -> int:
-    """Run environment precheck."""
+    """CLI handler: Run environment precheck.
+    
+    Args:
+        args: Parsed arguments with optional 'name' field.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if precheck(args.name or "manual-check", interactive=True):
         return 0
     return 1
 
 
 def cmd_health(args: argparse.Namespace) -> int:
-    """Run health check."""
+    """CLI handler: Run health diagnostics.
+    
+    Args:
+        args: Parsed arguments (unused).
+        
+    Returns:
+        Exit code (0 if healthy, 1 otherwise).
+    """
     results = run_health_check()
     print_health_report(results)
     return 0 if results["overall"] == "HEALTHY" else 1
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    """Initialize project for workflow."""
+    """CLI handler: Initialize project for workflow.
+    
+    Args:
+        args: Parsed arguments with optional 'prefix' field.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     print("=== Workflow Initialization ===")
     print()
 
@@ -511,7 +731,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         print(".beads directory exists")
 
     # Ensure directories
-    for d in [".claude/commands", ".claude/rules", ".claude/lib", "docs/plans"]:
+    for d in [".claude/commands", ".claude/rules", "_claude/lib", "docs/plans"]:
         Path(d).mkdir(parents=True, exist_ok=True)
     print("Directories verified")
 
@@ -531,7 +751,14 @@ def cmd_init(args: argparse.Namespace) -> int:
 
 
 def cmd_start(args: argparse.Namespace) -> int:
-    """Start new feature with epic creation."""
+    """CLI handler: Start new feature with epic creation.
+    
+    Args:
+        args: Parsed arguments with 'description' field.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("start"):
         return 1
 
@@ -572,7 +799,14 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 
 def cmd_ready(args: argparse.Namespace) -> int:
-    """Show ready (unblocked) issues."""
+    """CLI handler: Show ready (unblocked) issues.
+    
+    Args:
+        args: Parsed arguments (unused).
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("ready"):
         return 1
 
@@ -581,7 +815,7 @@ def cmd_ready(args: argparse.Namespace) -> int:
         if not issues:
             print("No ready issues found.")
             print()
-            print("Check blocked issues: uv run python .claude/lib/workflow.py list --blocked")
+            print("Check blocked issues: uv run python _claude/lib/workflow.py list --blocked")
             return 0
 
         print("Ready issues:")
@@ -598,7 +832,14 @@ def cmd_ready(args: argparse.Namespace) -> int:
 
 
 def cmd_list(args: argparse.Namespace) -> int:
-    """List issues with optional filters."""
+    """CLI handler: List issues with optional filters.
+    
+    Args:
+        args: Parsed arguments with optional 'status' and 'blocked' fields.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("list"):
         return 1
 
@@ -633,7 +874,14 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 
 def cmd_find_affected(args: argparse.Namespace) -> int:
-    """Find tasks affected by (blocked by) an issue."""
+    """CLI handler: Find tasks blocked by an issue.
+    
+    Args:
+        args: Parsed arguments with 'issue_id' and optional 'json' fields.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("find-affected"):
         return 1
 
@@ -654,7 +902,14 @@ def cmd_find_affected(args: argparse.Namespace) -> int:
 
 
 def cmd_show(args: argparse.Namespace) -> int:
-    """Show issue details."""
+    """CLI handler: Show issue details.
+    
+    Args:
+        args: Parsed arguments with 'issue_id' and optional 'json' fields.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("show"):
         return 1
 
@@ -683,7 +938,14 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 
 def cmd_close(args: argparse.Namespace) -> int:
-    """Close an issue with reason."""
+    """CLI handler: Close an issue with reason.
+    
+    Args:
+        args: Parsed arguments with 'issue_id' and 'reason' fields.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("close"):
         return 1
 
@@ -699,7 +961,15 @@ def cmd_close(args: argparse.Namespace) -> int:
 
 
 def cmd_update(args: argparse.Namespace) -> int:
-    """Update an issue."""
+    """CLI handler: Update an issue.
+    
+    Args:
+        args: Parsed arguments with 'issue_id' and optional
+            'status', 'notes', 'description' fields.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("update"):
         return 1
 
@@ -728,7 +998,14 @@ def cmd_update(args: argparse.Namespace) -> int:
 
 
 def cmd_show_tasks(args: argparse.Namespace) -> int:
-    """Show tasks for an epic."""
+    """CLI handler: Show tasks for an epic.
+    
+    Args:
+        args: Parsed arguments with 'epic_id' field.
+        
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
     if not precheck("show-tasks"):
         return 1
     steering_show_tasks(args.epic_id)
@@ -736,7 +1013,13 @@ def cmd_show_tasks(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    """Entry point."""
+    """CLI entry point for workflow utilities.
+    
+    Parses command-line arguments and dispatches to appropriate handler.
+    
+    Returns:
+        Exit code from the executed subcommand.
+    """
     parser = argparse.ArgumentParser(
         prog="workflow",
         description="Agentic workflow utilities for Claude Code"

@@ -142,9 +142,9 @@ ls .claude/commands/ | wc -l
 ls -lh .claude/commands/workflow-*.md | awk '{if ($5 == "0") print "ERROR: " $9 " is empty"; else print "OK: " $9}'
 
 # Verify workflow.py exists and is valid
-if [ -f ".claude/lib/workflow.py" ]; then
+if [ -f "_claude/lib/workflow.py" ]; then
   echo "OK: workflow.py exists"
-  if uv run python -c "import ast; ast.parse(open('.claude/lib/workflow.py').read())" 2>/dev/null; then
+  if uv run python -c "import ast; ast.parse(open('_claude/lib/workflow.py').read())" 2>/dev/null; then
     echo "OK: workflow.py is valid Python"
   else
     echo "ERROR: workflow.py has syntax errors"

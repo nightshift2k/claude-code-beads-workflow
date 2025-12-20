@@ -17,7 +17,7 @@ Example: `/workflow-steer-research pydo-r01`
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-steer-research
+uv run python _claude/lib/workflow.py precheck --name workflow-steer-research
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -32,7 +32,7 @@ This command guides you through resolving a research question and applying findi
 
 Get the research issue details:
 ```bash
-uv run python .claude/lib/workflow.py show $RESEARCH_ID --json
+uv run python _claude/lib/workflow.py show $RESEARCH_ID --json
 ```
 
 Extract:
@@ -88,7 +88,7 @@ Store the findings summary for later use.
 
 Find tasks blocked by this research issue:
 ```bash
-uv run python .claude/lib/workflow.py find-affected $RESEARCH_ID --json
+uv run python _claude/lib/workflow.py find-affected $RESEARCH_ID --json
 ```
 
 Count the blocked tasks. If zero:
@@ -102,7 +102,7 @@ If user confirms, skip to step 10 (close research).
 
 If blocked tasks exist, show impact:
 ```bash
-uv run python .claude/lib/workflow.py find-affected $RESEARCH_ID
+uv run python _claude/lib/workflow.py find-affected $RESEARCH_ID
 ```
 This displays a formatted impact table.
 
@@ -130,7 +130,7 @@ Extract the epic ID from the first blocked task (e.g., `pydo-abc.5` → `pydo-ab
 
 Get epic details for big picture context:
 ```bash
-uv run python .claude/lib/workflow.py show $EPIC_ID --json
+uv run python _claude/lib/workflow.py show $EPIC_ID --json
 ```
 
 Extract:
@@ -139,7 +139,7 @@ Extract:
 
 For each blocked task, gather:
 ```bash
-uv run python .claude/lib/workflow.py show $TASK_ID --json
+uv run python _claude/lib/workflow.py show $TASK_ID --json
 ```
 
 Extract:
@@ -194,7 +194,7 @@ For each blocked task:
 1. Extract the revised description from writing-plans output for that task
 2. Update the task with the revised description:
 ```bash
-uv run python .claude/lib/workflow.py update $TASK_ID --description="<revised_description>"
+uv run python _claude/lib/workflow.py update $TASK_ID --description="<revised_description>"
 ```
 
 3. Remove the blocking dependency:
@@ -208,7 +208,7 @@ Display progress as you update each task.
 
 Close the research issue with resolution:
 ```bash
-uv run python .claude/lib/workflow.py close $RESEARCH_ID "Research complete. Findings applied to <count> blocked task(s)."
+uv run python _claude/lib/workflow.py close $RESEARCH_ID "Research complete. Findings applied to <count> blocked task(s)."
 ```
 
 **11. Display Summary**
@@ -222,7 +222,7 @@ Updated:  <count> tasks
 
 Display affected tasks that are now unblocked:
 ```bash
-uv run python .claude/lib/workflow.py ready
+uv run python _claude/lib/workflow.py ready
 ```
 
 ---
@@ -265,7 +265,7 @@ uv run python .claude/lib/workflow.py ready
 **If research issue not found:**
 ```bash
 # List all research issues
-uv run python .claude/lib/workflow.py list --json
+uv run python _claude/lib/workflow.py list --json
 # Filter for issues with "Research:" in title
 ```
 

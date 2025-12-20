@@ -13,7 +13,7 @@ This command validates the environment and initializes all required components.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-init
+uv run python _claude/lib/workflow.py precheck --name workflow-init
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -116,11 +116,11 @@ echo "Verifying directory structure..."
 # Ensure .claude directories exist
 mkdir -p .claude/commands
 mkdir -p .claude/rules
-mkdir -p .claude/lib
+mkdir -p _claude/lib
 
 echo ".claude/commands: OK"
 echo ".claude/rules: OK"
-echo ".claude/lib: OK"
+echo "_claude/lib: OK"
 
 # Ensure docs directory for plans
 mkdir -p docs/plans
@@ -207,7 +207,7 @@ When initializing a new project, choose a prefix that is:
 | Component | Purpose |
 |-----------|---------|
 | `.beads/` | Beads issue tracking database and JSONL |
-| `.claude/lib/` | Shared workflow scripts |
+| `_claude/lib/` | Shared workflow scripts |
 | `docs/plans/` | Implementation plan documents |
 
 ### Troubleshooting

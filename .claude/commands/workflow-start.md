@@ -13,7 +13,7 @@ This command creates a Beads epic to track the entire feature lifecycle.
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-start
+uv run python _claude/lib/workflow.py precheck --name workflow-start
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.

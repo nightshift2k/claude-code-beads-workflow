@@ -13,17 +13,10 @@ This command ensures proper session completion with all work tracked and locally
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-workflow_precheck "workflow-land"
+uv run python _claude/lib/workflow.py precheck --name workflow-land
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
-
-### Setup Interruption Handler
-
-Set up cleanup trap to handle unexpected interruptions:
-```bash
-trap 'workflow_cleanup "workflow-land"' EXIT INT TERM
-```
 
 ---
 
@@ -73,7 +66,7 @@ git add . && git commit -m "chore(workflow): sync session - [summary]"
 
 See @.claude/rules/006-git-conventions.md for commit message format.
 
-**7. Choose next work item**: Use `uv run python .claude/lib/workflow.py ready` to identify next available work
+**7. Choose next work item**: Use `uv run python _claude/lib/workflow.py ready` to identify next available work
 ```bash
 bd  ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```

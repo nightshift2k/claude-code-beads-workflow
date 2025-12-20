@@ -13,7 +13,7 @@ This command provides a comprehensive view of implementation status and tracking
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-check
+uv run python _claude/lib/workflow.py precheck --name workflow-check
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -24,18 +24,18 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 **1. Active Features**: Review Beads epics and their status
 ```bash
-uv run python .claude/lib/workflow.py list --json
+uv run python _claude/lib/workflow.py list --json
 # Filter for type=epic in output
 ```
 
 **2. Open Issues**: Check open issues by status
 ```bash
-uv run python .claude/lib/workflow.py list --status open --json
+uv run python _claude/lib/workflow.py list --status open --json
 ```
 
 **3. Ready Work**: Find unblocked work available
 ```bash
-uv run python .claude/lib/workflow.py ready --json
+uv run python _claude/lib/workflow.py ready --json
 ```
 
 **4. Stale Issues**: Identify forgotten work (7+ days old)
@@ -45,14 +45,14 @@ bd --sandbox stale --days 7 --json
 
 **5. Blocked Issues**: Check for dependency blocks
 ```bash
-uv run python .claude/lib/workflow.py list --blocked --json
+uv run python _claude/lib/workflow.py list --blocked --json
 ```
 
 **6. Project Statistics**: Review overall progress
 ```bash
 # Count by status
-uv run python .claude/lib/workflow.py list --status open --json
-uv run python .claude/lib/workflow.py list --status closed --json
+uv run python _claude/lib/workflow.py list --status open --json
+uv run python _claude/lib/workflow.py list --status closed --json
 ```
 
 ---

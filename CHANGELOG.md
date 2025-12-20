@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING: Moved workflow.py from `.claude/lib/` to `_claude/lib/`** for Serena MCP compatibility ([#853](https://github.com/oraios/serena/issues/853))
+  
+  **Migration for existing users:**
+  1. Move the file: `mv .claude/lib/workflow.py _claude/lib/workflow.py`
+  2. Update command references from `.claude/lib/workflow.py` to `_claude/lib/workflow.py`
+  3. Verify: Run `/workflow-health` to confirm
+  
+  **Why:** Serena MCP excludes dot-directories from symbol analysis. Using `_claude/lib/` enables code navigation while maintaining workflow functionality.
+
 ### Added
 - `/workflow-question-ask` - Interactive research question capture with one-question-at-a-time UX
 - `/workflow-steer-research` - Resolve research questions and update blocked tasks with findings
@@ -29,7 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `/workflow-track` now creates hierarchical child IDs (e.g., `epic.1`, `epic.2`)
 - `/workflow-start` emphasizes capturing epic ID for child issue creation
 - `CLAUDE.md` refactored: meta-project version for template development, users copy `CLAUDE.md.example`
-- All workflow commands now invoke Python tool via `uv run python .claude/lib/workflow.py <command>`
+- All workflow commands now invoke Python tool via `uv run python _claude/lib/workflow.py <command>`
 
 ### Fixed
 - jq "Cannot index array with string" errors - all `bd` commands return arrays `[{...}]`

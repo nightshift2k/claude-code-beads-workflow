@@ -14,7 +14,7 @@ This command performs comprehensive checks on all workflow components.
 Run the Python workflow tool:
 
 ```bash
-uv run python .claude/lib/workflow.py health
+uv run python _claude/lib/workflow.py health
 ```
 
 This performs comprehensive checks on:

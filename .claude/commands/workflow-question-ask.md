@@ -17,7 +17,7 @@ Example: `/workflow-question-ask How should we handle database migrations?`
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-uv run python .claude/lib/workflow.py precheck --name workflow-question-ask
+uv run python _claude/lib/workflow.py precheck --name workflow-question-ask
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
@@ -63,7 +63,7 @@ Wait for user response. Store as `RESEARCH_NOTES`.
 
 List potentially blocked issues:
 ```bash
-uv run python .claude/lib/workflow.py list --status open --json
+uv run python _claude/lib/workflow.py list --status open --json
 ```
 
 For each issue, ask: "Should this block [issue-id] - [title]? (Y/n/skip)"
@@ -198,7 +198,7 @@ Example:
 bd --sandbox dep add test-abc test-r01
 
 # Now test-abc is blocked until test-r01 is resolved
-uv run python .claude/lib/workflow.py list --blocked
+uv run python _claude/lib/workflow.py list --blocked
 # Shows: test-abc blocked by test-r01
 ```
 
@@ -208,8 +208,8 @@ uv run python .claude/lib/workflow.py list --blocked
 
 **Next steps:**
 1. Research issue appears in ready work (if not blocked itself)
-2. Claim with: `uv run python .claude/lib/workflow.py update [research-id] --status in_progress`
-3. Document findings in issue notes: `uv run python .claude/lib/workflow.py update [research-id] --notes "Found: [discovery]"`
+2. Claim with: `uv run python _claude/lib/workflow.py update [research-id] --status in_progress`
+3. Document findings in issue notes: `uv run python _claude/lib/workflow.py update [research-id] --notes "Found: [discovery]"`
 4. When complete, use `/workflow-steer-research [research-id]` to apply findings and unblock tasks
 
 ---
@@ -236,7 +236,7 @@ uv run python .claude/lib/workflow.py list --blocked
 **If issue creation fails:**
 ```bash
 # Check existing research issues
-uv run python .claude/lib/workflow.py list --json
+uv run python _claude/lib/workflow.py list --json
 # Filter for issues with "Research:" in title
 ```
 

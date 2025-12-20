@@ -13,7 +13,7 @@ This command helps you find and properly claim work from the Beads issue trackin
 
 **FIRST:** Run environment precheck before proceeding:
 ```bash
-workflow_precheck "workflow-work"
+uv run python _claude/lib/workflow.py precheck --name workflow-work
 ```
 
 If precheck fails, follow the guidance to resolve environment issues before continuing.
