@@ -46,9 +46,10 @@ This performs comprehensive checks on:
 |-------|--------|
 | bd CLI missing | Install Beads CLI |
 | .beads not initialized | Run `/workflow-init` |
-| Database corrupted | See recovery procedures in @CLAUDE.md |
+| Database corrupted | Try `bd import --force` first, then `bd reset` for severe cases |
 | Stale issues | Review with `bd stale` |
 | Blocked issues | Review dependencies with `bd blocked` |
+| Circular dependencies | Use `bd graph` to visualize, `bd dep cycles` to detect |
 
 **Example usage:**
 ```

@@ -1,5 +1,8 @@
 # Beads CLI JSON Patterns
 
+> **⚠️ CRITICAL:** `bd create` returns an object `{...}`. ALL other commands return arrays `[{...}]`.
+> Use `.id` for create, `.[0].id` for everything else.
+
 <beads_json_critical>
 ## Critical: Know Which Commands Return Arrays vs Objects
 
@@ -83,6 +86,91 @@ bd update $ID --notes "Progress update" --json
 - Must start with letter, end with hyphen
 
 See @CLAUDE.md for full prefix guidelines.
+
+---
+
+## Useful Flags and Commands
+
+### Long Descriptions: `--body-file`
+
+**Recommended** for task descriptions with code blocks or multi-line content:
+```bash
+# Write content to temp file
+cat > /tmp/task.md <<'EOF'
+[Task content with code blocks]
+EOF
+
+# Create issue referencing file (cleaner than heredoc)
+bd create "Task title" --body-file /tmp/task.md --json
+```
+
+**Alternative** using `--description` with heredoc (works but less clean):
+```bash
+bd create "Task title" --description="$(cat <<'EOF'
+[Task content]
+EOF
+)" --json
+```
+
+### Filtering: `--type`
+
+Filter issues by type:
+```bash
+# Get ready tasks only (excludes epics)
+bd ready --type task --json
+
+# List all epics
+bd list --type epic --json
+
+# List all tasks
+bd list --type task --json
+```
+
+### Estimates: `--estimate`
+
+Add time estimates to issues:
+```bash
+bd create "Task" --estimate "2h" --json
+bd update [id] --estimate "4h" --json
+```
+
+### Status Management
+
+New statuses available:
+```bash
+# Defer to icebox (not ready yet)
+bd update [id] --status deferred --json
+
+# Pin as reference (persistent, excluded from bd ready)
+bd pin [id] --json
+bd unpin [id] --json
+
+# View pinned issues
+bd list --pinned --json
+```
+
+### Dependency Visualization
+
+```bash
+# ASCII DAG of all dependencies
+bd graph
+
+# Dependency tree for specific issue
+bd dep tree [issue-id]
+
+# Detect circular dependencies
+bd dep cycles
+```
+
+### Emergency Recovery
+
+```bash
+# Reset database completely (keeps JSONL)
+bd reset
+
+# Rebuild from JSONL (less aggressive)
+bd import --force
+```
 
 ---
 

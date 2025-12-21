@@ -220,15 +220,6 @@ uv run python _claude/lib/workflow.py list --blocked
 - Consider if this truly needs tracking (use for non-trivial questions)
 - Be ready to provide context about impact and urgency
 
-### When to Use vs `/workflow-questions`
-
-| Use `/workflow-question-ask` | Use old `/workflow-questions` |
-|------------------------------|-------------------------------|
-| Single question needing immediate tracking | Managing multiple existing questions |
-| Interactive context gathering preferred | Batch question management |
-| Self-contained Beads storage desired | External markdown file desired |
-| NEW PROJECTS (recommended) | Legacy projects with existing questions.md |
-
 ---
 
 ### Troubleshooting

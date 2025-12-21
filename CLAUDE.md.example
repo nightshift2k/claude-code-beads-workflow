@@ -469,8 +469,14 @@ bd list --status open
 # Check for stale issues
 bd stale --days 7
 
-# Check dependency tree
+# Visualize dependency graph (ASCII DAG)
+bd graph
+
+# Check dependency tree for specific issue
 bd dep tree [issue-id]
+
+# Detect circular dependencies
+bd dep cycles
 ```
 
 **Solutions:**
@@ -498,13 +504,16 @@ When something goes wrong, try these in order:
 1. FIRST: bd import --force
    └─ Rebuilds database from JSONL (fixes most sync issues)
 
-2. IF import fails: Database Corruption Recovery (below)
-   └─ Backup DB, reinitialize, reimport from JSONL
+2. IF import fails: bd reset
+   └─ Complete database reset (keeps JSONL, faster than manual recovery)
 
-3. IF still broken: Session State Recovery (below)
+3. IF still broken: Database Corruption Recovery (below)
+   └─ Manual backup, reinitialize, reimport from JSONL
+
+4. IF context issues: Session State Recovery (below)
    └─ Check in-progress issues, resume or reset status
 
-4. LAST RESORT: Full Reset (below)
+5. LAST RESORT: Full Reset (below)
    └─ Backup everything, delete DB, start fresh
 ```
 
@@ -514,8 +523,21 @@ When something goes wrong, try these in order:
 
 ### Emergency Recovery Procedures
 
-#### Database Corruption Recovery
+#### Quick Reset (Recommended for Most Issues)
 
+```bash
+# Reset database completely (keeps JSONL)
+bd reset
+
+# Verify recovery
+bd list --json | jq '. | length'
+```
+
+This command rebuilds the database from JSONL without manual steps.
+
+#### Database Corruption Recovery (Manual Method)
+
+Use this if `bd reset` fails:
 ```bash
 # 1. Verify corruption
 sqlite3 .beads/*.db "PRAGMA integrity_check;"
@@ -577,12 +599,22 @@ bd list --json | jq '. | length'
 |---------|----------|
 | Lost work (sandbox) | `bd sync --flush-only` then check .beads/issues.jsonl |
 | JSONL conflicts | Use `bd merge` tool |
-| Database out of sync | `bd import --force` |
+| Database out of sync | `bd import --force` then `bd reset` if needed |
 | Multi-machine sync | `bd sync` (full git sync) |
-| Confusing dependencies | `bd dep tree [id]` |
+| Confusing dependencies | `bd graph` for visualization, `bd dep tree [id]` for specific issue |
+| Circular dependencies | `bd dep cycles` to detect, `bd dep remove` to break |
 | Stale issues | `bd stale --days 7` |
-| Database corruption | Recovery from JSONL backup |
+| Database corruption | `bd reset` (quick) or manual recovery from JSONL |
 | Sandbox mode issues | Use `--sandbox` flag |
+
+### New Statuses
+
+| Status | Purpose | Usage |
+|--------|---------|-------|
+| `deferred` | Icebox (not ready for work) | `bd update [id] --status deferred` |
+| `pinned` | Persistent reference issues | `bd pin [id]` (excluded from `bd ready`) |
+
+View pinned issues: `bd list --pinned`
 
 ---
 

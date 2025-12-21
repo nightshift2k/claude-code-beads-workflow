@@ -27,21 +27,26 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 **1. Ready Work Detection**: Find unblocked issues available for work
 ```bash
 # Get all ready issues
-bd  ready --json
+bd ready --json
+
+# Filter by type (tasks only, excludes epics)
+bd ready --type task --json
 
 # Parse with jq (note: returns array)
-bd  ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
+bd ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```
+
+**Note:** Pinned issues are excluded from `bd ready` by design. Use `bd list --pinned` to view reference issues.
 
 **2. Work Selection**: Review available work with context and priority
    - Examine issue descriptions and priorities
-   - Check dependencies with `bd  dep tree [issue-id]`
+   - Check dependencies with `bd dep tree [issue-id]`
    - Select the most appropriate issue to work on
 
 **3. Status Update**: Claim the selected issue by updating to "in_progress"
 ```bash
 # Update status (note: use .[0] for single result)
-bd  update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
+bd update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
 ```
 
 **4. Context Setup**: Review any related documentation or specifications
@@ -49,7 +54,7 @@ bd  update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(
    - Review project context in @CLAUDE.md and project rules
 
 **5. Execute with Specialized Agent**: Dispatch to appropriate agent
-   - Read the full issue description with `bd  show [issue-id]`
+   - Read the full issue description with `bd show [issue-id]`
    - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
 
 <task_checkpoint_critical>
@@ -61,7 +66,7 @@ git add .
 git commit -m "type(scope): [issue-id] description"
 
 # 2. Close the issue
-bd  close [issue-id] --reason "Completed: [summary]" --json
+bd close [issue-id] --reason "Completed: [summary]" --json
 
 # 3. STOP HERE - Do NOT continue to next task
 ```
@@ -101,13 +106,13 @@ See @.claude/rules/006-git-conventions.md for commit message format.
 **If `bd ready` returns no issues:**
 ```bash
 # Check for blocked issues
-bd  blocked
+bd blocked
 
 # View all open issues
-bd  list --status open
+bd list --status open
 
 # Check for stale issues that need attention
-bd  stale --days 7
+bd stale --days 7
 ```
 
 **If issues are blocked by research questions:**

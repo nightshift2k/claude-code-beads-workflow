@@ -8,13 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - **BREAKING: Moved workflow.py from `.claude/lib/` to `_claude/lib/`** for Serena MCP compatibility ([#853](https://github.com/oraios/serena/issues/853))
-  
+
   **Migration for existing users:**
   1. Move the file: `mv .claude/lib/workflow.py _claude/lib/workflow.py`
   2. Update command references from `.claude/lib/workflow.py` to `_claude/lib/workflow.py`
   3. Verify: Run `/workflow-health` to confirm
-  
+
   **Why:** Serena MCP excludes dot-directories from symbol analysis. Using `_claude/lib/` enables code navigation while maintaining workflow functionality.
+
+- **Documentation improvements** for Beads v0.29.0-v0.32.1 features:
+  - `workflow-track.md`: Document `--body-file` flag (Beads v0.30.3+) as recommended method for long descriptions
+  - `workflow-work.md`: Document `--type` filter and pinned issue behavior
+  - `workflow-check.md`: Add `bd graph` (Beads v0.30.6+) visualization and `--pinned` (Beads v0.30.7+) listing
+  - `workflow-health.md`: Add `bd reset` (Beads v0.30.0+) for emergency recovery
+  - `004-beads-json-patterns.md`: Document new flags and commands:
+    - `--body-file`: Beads v0.30.3+
+    - `bd graph`: Beads v0.30.6+
+    - `bd pin/unpin`, `--pinned`: Beads v0.30.7+
+    - `bd reset`: Beads v0.30.0+
+    - `deferred` status: Beads v0.31.0+
+  - `CLAUDE.md.example`: Document `bd reset`, `bd graph`, new statuses (`deferred`, `pinned`)
 
 ### Added
 - `/workflow-question-ask` - Interactive research question capture with one-question-at-a-time UX

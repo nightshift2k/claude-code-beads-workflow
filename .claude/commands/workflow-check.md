@@ -48,7 +48,22 @@ bd --sandbox stale --days 7 --json
 uv run python _claude/lib/workflow.py list --blocked --json
 ```
 
-**6. Project Statistics**: Review overall progress
+**6. Dependency Visualization**: View dependency graph
+```bash
+# ASCII DAG showing all dependencies
+bd --sandbox graph
+
+# Dependency tree for specific issue
+bd --sandbox dep tree [issue-id]
+```
+
+**7. Pinned Issues**: View persistent reference issues
+```bash
+# List pinned issues (persistent, excluded from bd ready)
+bd --sandbox list --pinned --json
+```
+
+**8. Project Statistics**: Review overall progress
 ```bash
 # Count by status
 uv run python _claude/lib/workflow.py list --status open --json
@@ -64,6 +79,8 @@ uv run python _claude/lib/workflow.py list --status closed --json
 - Ready work available for immediate implementation
 - Stale issues that may need attention
 - Blocked issues that need dependency resolution
+- Dependency graph visualization (ASCII DAG)
+- Pinned reference issues
 - Overall project statistics and progress
 
 ### Use This Command To

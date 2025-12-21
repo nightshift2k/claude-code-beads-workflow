@@ -26,21 +26,21 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 
 **1. File remaining work**: Create Beads issues for any follow-up tasks discovered
 ```bash
-bd  create "Follow-up task" --description="[context]" -t task -p [priority] --deps discovered-from:[current-id] --json
+bd create "Follow-up task" --description="[context]" -t task -p [priority] --deps discovered-from:[current-id] --json
 ```
 
 **2. Review current status**: Check what needs closing/updating (use `&&` to chain commands)
 ```bash
-echo "=== Closed ===" && bd  list --status closed --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== In-Progress ===" && bd  list --status in_progress --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== Open ===" && bd  list --status open --json | jq -r '.[] | "[\(.id)] \(.title)"'
+echo "=== Closed ===" && bd list --status closed --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== In-Progress ===" && bd list --status in_progress --json | jq -r '.[] | "[\(.id)] \(.title)"' && echo "" && echo "=== Open ===" && bd list --status open --json | jq -r '.[] | "[\(.id)] \(.title)"'
 ```
 
 **3. Update issue status**: Close completed issues, update in-progress issues with notes
 ```bash
 # Close completed work (run separately for each issue)
-bd  close [issue-id] --reason "Completed: [specific reason]" --json
+bd close [issue-id] --reason "Completed: [specific reason]" --json
 
 # Update in-progress issues with status notes
-bd  update [issue-id] --notes "[progress update]" --json
+bd update [issue-id] --notes "[progress update]" --json
 ```
 
 **Note:** Run each `bd close` and `bd update` as separate commands. Do NOT combine with newlines.
@@ -52,7 +52,7 @@ bd  update [issue-id] --notes "[progress update]" --json
 **5. Persist changes**: In sandbox mode, run `bd sync --flush-only` to export changes to JSONL. In normal mode, changes auto-persist.
 ```bash
 # Sandbox mode (default for Claude Code)
-bd  sync --flush-only
+bd sync --flush-only
 ```
 
 **6. Commit locally**: Commit Beads state and any uncommitted work
@@ -68,7 +68,7 @@ See @.claude/rules/006-git-conventions.md for commit message format.
 
 **7. Choose next work item**: Use `uv run python _claude/lib/workflow.py ready` to identify next available work
 ```bash
-bd  ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
+bd ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
 ```
 
 ---
@@ -92,7 +92,7 @@ ls -la .beads/
 test -w .beads/issues.jsonl && echo "Writable" || echo "Not writable"
 
 # Manual export if needed
-bd  export > .beads/issues.jsonl.backup
+bd export > .beads/issues.jsonl.backup
 ```
 
 See @CLAUDE.md for comprehensive troubleshooting solutions.

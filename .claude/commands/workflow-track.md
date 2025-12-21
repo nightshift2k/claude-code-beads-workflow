@@ -37,11 +37,15 @@ If precheck fails, follow the guidance to resolve environment issues before cont
 EPIC_ID="<epic-id-from-workflow-start>"
 
 # Verify epic exists (NOTE: bd show returns an ARRAY, not object)
-bd show $EPIC_ID --json
+bd --sandbox show $EPIC_ID --json
 # Returns: [{...}] - use jq '.[0].field' to access fields, NOT jq '.field'
 ```
 
 **⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
+
+**⚠️ --sandbox flag:** Examples show `bd --sandbox` for consistency. The Python wrapper (`uv run python _claude/lib/workflow.py`) adds this flag automatically.
+
+**⚠️ Long descriptions:** Use `--body-file` (Beads v0.30.3+) for task descriptions with code blocks or multi-line content. Cleaner than heredoc for complex content.
 
 **2. Read Implementation Plan**: Parse the plan document to identify all tasks
 
@@ -117,6 +121,37 @@ Expected: FAIL
 ```
 
 Create the issue with FULL content AND hierarchical ID:
+
+**Recommended method using `--body-file`** (cleaner for long descriptions):
+```bash
+# Write content to temp file
+cat > /tmp/task-3.md <<'EOF'
+**Files:**
+- Modify: `pydo/models.py`
+- Create: `tests/test_models.py`
+
+**Step 1: Write failing test**
+```python
+def test_create_task():
+    task = Task(description="Test")
+    assert task.status == "pending"
+```
+
+**Step 2: Run test**
+```bash
+uv run pytest tests/test_models.py -v
+```
+Expected: FAIL
+
+**Step 3: Implement**
+[full implementation code here]
+EOF
+
+# Create issue referencing the file
+bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --body-file /tmp/task-3.md --json
+```
+
+**Alternative method using heredoc** (works but less clean):
 ```bash
 bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 **Files:**
@@ -148,21 +183,39 @@ EOF
 
 **EFFICIENCY:** Create all issues in batch mode with `--parent --force`:
 
+**Recommended approach using `--body-file`:**
 ```bash
 # Set epic ID from /workflow-start
 EPIC_ID="pydo-abc"  # Replace with actual epic ID
 
-# Create all tasks in one batch with full descriptions and hierarchical IDs
+# Extract each task to temp file and create issue
+cat > /tmp/task-1.md <<'EOF'
+[Full Task 1 content from plan]
+EOF
+bd --sandbox create "Task 1: Project Setup" --parent $EPIC_ID --force -t task -p 2 --body-file /tmp/task-1.md --json
+
+cat > /tmp/task-2.md <<'EOF'
+[Full Task 2 content from plan]
+EOF
+bd --sandbox create "Task 2: Exceptions" --parent $EPIC_ID --force -t task -p 2 --body-file /tmp/task-2.md --json
+
+cat > /tmp/task-3.md <<'EOF'
+[Full Task 3 content from plan]
+EOF
+bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --body-file /tmp/task-3.md --json
+# ... continue for all tasks
+```
+
+**Alternative using heredoc** (works for shorter descriptions):
+```bash
+EPIC_ID="pydo-abc"
+
 bd --sandbox create "Task 1: Project Setup" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 1 content from plan]
 EOF
 )" --json && \
 bd --sandbox create "Task 2: Exceptions" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
 [Full Task 2 content from plan]
-EOF
-)" --json && \
-bd --sandbox create "Task 3: Task Model" --parent $EPIC_ID --force -t task -p 2 --description="$(cat <<'EOF'
-[Full Task 3 content from plan]
 EOF
 )" --json
 # ... continue for all tasks
@@ -223,11 +276,11 @@ If issue creation fails, see @CLAUDE.md for troubleshooting solutions.
 If you need to recreate issues:
 ```bash
 # List all child IDs
-bd list --json | jq -r '.[] | select(.id | contains(".")) | .id'
+bd --sandbox list --json | jq -r '.[] | select(.id | contains(".")) | .id'
 
 # Delete all children (keeps epic)
-bd list --json | jq -r '.[] | select(.id | contains(".")) | .id' | xargs -I {} bd delete {} --force
+bd --sandbox list --json | jq -r '.[] | select(.id | contains(".")) | .id' | xargs -I {} bd --sandbox delete {} --force
 
 # Or delete by issue_type
-bd list --json | jq -r '.[] | select(.issue_type == "task") | .id' | xargs -I {} bd delete {} --force
+bd --sandbox list --json | jq -r '.[] | select(.issue_type == "task") | .id' | xargs -I {} bd --sandbox delete {} --force
 ```
