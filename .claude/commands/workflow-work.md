@@ -3,130 +3,168 @@ argument-hint:
 description: Find and claim available work from Beads issue tracking system
 ---
 
-## `/workflow-work` - Find and claim available work
+## Intent
 
-Use this command when ready to start working on tracked issues.
+Find unblocked work, claim it, execute with a specialized agent, then stop for human approval.
 
-This command helps you find and properly claim work from the Beads issue tracking system.
+## When to Use
 
-### Environment Validation
+- Ready to start working on next task
+- Resuming after session break
+- Manual task-by-task execution (vs automated `/workflow-execute`)
 
-**FIRST:** Run environment precheck before proceeding:
+## When NOT to Use
+
+- Want automated full-plan execution → use `/workflow-execute`
+- Quick isolated task outside epics → use `/workflow-do`
+- Completing session → use `/workflow-land`
+- Checking status only → use `/workflow-check`
+
+## Context Required
+
+Run environment precheck first:
+
 ```bash
-uv run python _claude/lib/workflow.py precheck --name workflow-work
+uv run python .claude/lib/workflow.py precheck --name workflow-work
 ```
 
-If precheck fails, follow the guidance to resolve environment issues before continuing.
+## Decision Framework
 
----
+| State                   | Action                           | Outcome             |
+| ----------------------- | -------------------------------- | ------------------- |
+| Ready work available    | Show list, let user select       | Task claimed        |
+| No ready work           | Check blocked/stale/open issues  | Diagnose cause      |
+| Work in progress exists | Warn, offer to resume or reset   | Clean state         |
+| Task selected           | Mark in_progress, dispatch agent | Execution begins    |
+| Task complete           | Commit, close issue, STOP        | Human approves next |
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
+## Branch-Epic Validation (BEFORE claiming work)
 
-### Process
+| Current Branch       | In-Progress Epic | Action                                |
+| -------------------- | ---------------- | ------------------------------------- |
+| `main`               | None             | Proceed normally                      |
+| `main`               | Exists           | Warn, suggest creating feature branch |
+| `feature/<epic-X>-*` | None             | Proceed (orphan branch OK)            |
+| `feature/<epic-X>-*` | Same epic X      | Proceed (aligned)                     |
+| `feature/<epic-X>-*` | Different epic Y | Error, require resolution             |
 
-**1. Ready Work Detection**: Find unblocked issues available for work
+**Validate branch-epic consistency before claiming work.**
+
+## Task Checkpoint (CRITICAL)
+
+**ONE TASK PER INVOCATION**
+
+After completing any task:
+
+1. Commit changes (REQUIRED before closing)
+2. Close the issue
+3. **STOP** - Return control to human
+4. Human runs `/workflow-work` again for next task OR `/workflow-land` to end session
+
+**Do not chain automatically to the next task.**
+
+## Execution Flow
+
+| Step | Action                                   | Purpose                   |
+| ---- | ---------------------------------------- | ------------------------- |
+| 1    | Validate branch-epic alignment           | Prevent context conflicts |
+| 2    | Find ready work (`bd ready --type task`) | Identify available tasks  |
+| 3    | Present options with priority context    | User selects              |
+| 4    | Claim task (`--status in_progress`)      | Prevent conflicts         |
+| 5    | Read full description (`bd show`)        | Get complete context      |
+| 6    | Dispatch to specialized agent            | Domain expertise          |
+| 7    | Commit changes                           | Version control           |
+| 8    | Close issue                              | Mark complete             |
+| 9    | **STOP**                                 | Await human approval      |
+
+## Agent Dispatch (CRITICAL)
+
+**Dispatch to specialized agents.** Never implement code directly.
+
+See @.claude/rules/agent-dispatch.md for agent selection.
+
+## Success Criteria
+
+- [ ] Branch-epic alignment validated
+- [ ] Task selected from ready work
+- [ ] Issue marked in_progress before work
+- [ ] Agent dispatched (not implemented directly)
+- [ ] Changes committed with issue ID
+- [ ] Issue closed with completion reason
+- [ ] Control returned to human
+
+## Edge Considerations
+
+- **No ready work**: Check `bd blocked`, `bd stale --days 7`, `bd list --status open`
+- **Blocked by research**: Use `/workflow-steer-research` to resolve
+- **AI diverged**: Use `/workflow-steer-correct` for course correction
+- **Work already in progress**: Warn, offer resume or reset options
+- **Orphaned issues**: Check with `bd orphans` for issues without parent
+- **Branch mismatch**: On `feature/epic-X-*` but epic Y in progress → error, require resolution
+- **Multiple epics**: If multiple in-progress epics, use first, warn about others
+- **No feature branch**: On main with active epic → warn, suggest creating branch
+
+## Reference Commands
+
 ```bash
-# Get all ready issues
+# Environment precheck
+uv run python .claude/lib/workflow.py precheck --name workflow-work
+
+# Branch-epic validation
+BRANCH=$(git branch --show-current)
+
+# Extract epic ID from branch name (if feature/fix branch)
+# Pattern: feature/<epic-id>-<slug> or fix/<epic-id>-<slug>
+if [[ "$BRANCH" =~ ^(feature|fix)/([a-z]+-[a-z0-9]+) ]]; then
+  EPIC_FROM_BRANCH="${BASH_REMATCH[2]}"
+fi
+
+# Find in-progress epic
+bd list --type epic --status in_progress --json | jq -r '.[0].id'
+
+# Find matching feature branch for epic
+git branch --list "feature/${EPIC_ID}-*" | head -1
+
+# Find ready work (returns array)
 bd ready --json
-
-# Filter by type (tasks only, excludes epics)
 bd ready --type task --json
+bd ready --parent $EPIC_ID --json  # Filter by epic (v0.37.0+)
 
-# Parse with jq (note: returns array)
+# Format ready work
 bd ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
-```
 
-**Note:** Pinned issues are excluded from `bd ready` by design. Use `bd list --pinned` to view reference issues.
+# Check dependencies
+bd dep tree [issue-id]
 
-**2. Work Selection**: Review available work with context and priority
-   - Examine issue descriptions and priorities
-   - Check dependencies with `bd dep tree [issue-id]`
-   - Select the most appropriate issue to work on
+# Claim task
+bd update [issue-id] --status in_progress --json
 
-**3. Status Update**: Claim the selected issue by updating to "in_progress"
-```bash
-# Update status (note: use .[0] for single result)
-bd update [issue-id] --status in_progress --json | jq -r '.[0] | "\(.id) now \(.status)"'
-```
+# Read full description
+bd show [issue-id] --json | jq -r '.[0].description'
 
-**4. Context Setup**: Review any related documentation or specifications
-   - Check issue description for links to specs or plans
-   - Review project context in @CLAUDE.md and project rules
-
-**5. Execute with Specialized Agent**: Dispatch to appropriate agent
-   - Read the full issue description with `bd show [issue-id]`
-   - **⚠️ Never implement directly** - dispatch via @.claude/rules/005-agent-dispatch.md
-
-<task_checkpoint_critical>
-**6. Checkpoint (CRITICAL)**: After task completion, STOP and return control to human
-
-```bash
-# 1. Commit changes (REQUIRED before closing)
+# Commit changes (see git-conventions.md)
 git add .
 git commit -m "type(scope): [issue-id] description"
 
-# 2. Close the issue
-bd close [issue-id] --reason "Completed: [summary]" --json
+# Close issue (--suggest-next shows newly unblocked issues)
+bd close [issue-id] --reason "Completed: [summary]" --suggest-next --json
 
-# 3. STOP HERE - Do NOT continue to next task
-```
+# Create follow-up issue
+bd create "Discovered: [issue]" --deps discovered-from:[current-id] --json
 
-**⚠️ ONE TASK PER INVOCATION**
-- Human must run `/workflow-work` again for next task
-- Or run `/workflow-land` to complete session
-- Never automatically chain to next task
-
-See @.claude/rules/006-git-conventions.md for commit message format.
-</task_checkpoint_critical>
-
----
-
-### Before Using This Command
-
-- Ensure Beads database is synchronized (`bd sync`)
-- Review any work in progress to avoid conflicts
-- Verify your development environment is ready
-
-### Best Practices
-
-- Always use `bd ready` to find work instead of manually selecting issues
-- Update your status to `in_progress` immediately when beginning work
-- Include detailed descriptions when creating related issues from discoveries
-- Use `--deps discovered-from:[current-issue-id]` when creating new issues during work
-
-### During Work, Remember
-
-- Create Beads issues for any discovered problems or tasks
-- Keep issue descriptions detailed for future context
-- Use appropriate priorities based on project guidelines
-- Follow @.claude/rules/006-git-conventions.md for all commits
-
-### Troubleshooting
-
-**If `bd ready` returns no issues:**
-```bash
-# Check for blocked issues
+# Troubleshooting: no ready work
 bd blocked
-
-# View all open issues
+bd blocked --parent $EPIC_ID  # Filter blocked by epic (v0.37.0+)
 bd list --status open
-
-# Check for stale issues that need attention
 bd stale --days 7
+bd orphans
 ```
 
-**If issues are blocked by research questions:**
-- Use `/workflow-steer-research` to resolve research and unblock tasks
+## Related Files
 
-**If AI has diverged during implementation:**
-- Use `/workflow-steer-correct` to create course correction task
-
-See @CLAUDE.md for troubleshooting solutions.
-
-**Example usage:**
-```
-/workflow-work
-# This will show you available work and guide you through claiming a task
-```
-
-This ensures proper coordination and tracking of all development work.
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/ai-native-instructions.md - Execution principles
+- @.claude/rules/beads-patterns.md - Beads CLI patterns
+- @.claude/rules/agent-dispatch.md - Agent selection
+- @.claude/rules/git-conventions.md - Commit format
+- @.claude/commands/workflow-land.md - Session completion

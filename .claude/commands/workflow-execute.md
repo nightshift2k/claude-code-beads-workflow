@@ -3,134 +3,125 @@ argument-hint: "[path/to/implementation/plan.md]"
 description: Execute an implementation plan with Beads tracking integration
 ---
 
-## `/workflow-execute` - Execute implementation plan with Beads tracking
+## Intent
 
-Use this command to execute an implementation plan with integrated Beads issue tracking.
+Execute an implementation plan with integrated Beads tracking, delegating to the executing-plans skill.
 
-This command acts as a wrapper for the executing-plans skill, ensuring proper tracking and coordination.
+## When to Use
 
-### Environment Validation
+- Implementation plan tracked and ready
+- Ready to implement all tasks in sequence
+- Want automated tracking and agent dispatch
 
-**FIRST:** Run environment precheck before proceeding:
+## When NOT to Use
+
+- No plan exists → use `/workflow-start` + brainstorming first
+- Plan not tracked → use `/workflow-track` first
+- Want manual task-by-task control → use `/workflow-work`
+- Quick isolated task → use `/workflow-do`
+
+## Context Required
+
+Run environment precheck first:
+
 ```bash
-uv run python _claude/lib/workflow.py precheck --name workflow-execute
+uv run python .claude/lib/workflow.py precheck --name workflow-execute
 ```
 
-If precheck fails, follow the guidance to resolve environment issues before continuing.
+Verify before proceeding:
 
-### Validate Plan File Argument
+- Plan file exists and is readable
+- Beads issues created (from `/workflow-track`)
+- No conflicting in-progress work
+
+## Decision Framework
+
+| State              | Action                          | Outcome             |
+| ------------------ | ------------------------------- | ------------------- |
+| Plan file provided | Validate and parse              | Tasks identified    |
+| No plan file       | Search `docs/plans/`, prompt    | Plan selected       |
+| Plan not tracked   | Suggest `/workflow-track` first | Proper tracking     |
+| Issues exist       | Invoke executing-plans skill    | Automated execution |
+| Task in progress   | Resume or reset                 | Clean state         |
+
+## Execution Flow
+
+| Phase       | Action                       | Beads Integration      |
+| ----------- | ---------------------------- | ---------------------- |
+| 1. Analyze  | Parse plan, identify tasks   | Verify issues exist    |
+| 2. Dispatch | Invoke executing-plans skill | Mark issue in_progress |
+| 3. Execute  | Agent implements task (TDD)  | Track progress         |
+| 4. Commit   | Git commit after each task   | Include issue ID       |
+| 5. Close    | Complete task                | Mark issue closed      |
+| 6. Repeat   | Next task                    | Until plan complete    |
+
+## Skill Integration
+
+This command delegates to `superpowers:executing-plans` with additional context:
+
+| Instruction                     | Purpose                                |
+| ------------------------------- | -------------------------------------- |
+| Dispatch appropriate sub-agents | Domain expertise (python-expert, etc.) |
+| Follow TDD workflow             | Quality assurance                      |
+| Update Beads status             | Track progress                         |
+| Create follow-up issues         | Capture discoveries                    |
+| Commit after each task          | Version control                        |
+
+## Agent Dispatch
+
+**Dispatch to specialized agents.** Never implement code directly.
+
+See @.claude/rules/agent-dispatch.md for agent selection.
+
+## Success Criteria
+
+- [ ] All plan tasks executed
+- [ ] Each task has corresponding Beads issue
+- [ ] All issues closed with completion notes
+- [ ] Git commits for each task with issue IDs
+- [ ] Follow-up issues created for discoveries
+
+## Edge Considerations
+
+- **Skill not available**: Fall back to manual `/workflow-work` execution
+- **Execution interrupted**: State saved in Beads, resume with `/workflow-work`
+- **Task fails**: Document failure, create follow-up issue, continue
+- **Multi-agent coordination**: Follow rules in multi-agent-coordination.md
+
+## Reference Commands
 
 ```bash
-PLAN_FILE="$1"
+# Environment precheck
+uv run python .claude/lib/workflow.py precheck --name workflow-execute
 
-if [ -z "$PLAN_FILE" ]; then
-  echo "ERROR: Usage: /workflow-execute [path/to/implementation/plan.md]"
-  echo ""
-  echo "   Example: /workflow-execute docs/plans/user-auth-plan.md"
-  echo ""
-  echo "   Looking for existing plans..."
-  find . -name "*plan*.md" -type f -not -path "*/node_modules/*" -not -path "*/.git/*" | head -5
-  exit 1
-fi
+# Check if issues exist for plan
+bd list --json
 
-if [ ! -f "$PLAN_FILE" ]; then
-  echo "ERROR: Plan file not found: $PLAN_FILE"
-  echo ""
-  echo "   Searching for implementation plans..."
-  find . -name "*plan*.md" -type f -not -path "*/node_modules/*" -not -path "*/.git/*" | head -5
-  exit 1
-fi
+# Check current work state
+bd list --status in_progress --json
 
-echo "Executing plan: $PLAN_FILE"
-echo ""
-```
+# Check blocked dependencies
+bd blocked --json
 
----
+# Mark task in progress (during execution)
+bd update [id] --status in_progress --json
 
-**⚠️ Beads JSON:** All `bd` commands return arrays. See @.claude/rules/004-beads-json-patterns.md for correct jq usage.
+# Close task (after completion) - --suggest-next shows newly unblocked
+bd close [id] --reason "[completion note]" --suggest-next --json
 
-### Process
+# Create follow-up issue
+bd create "Discovered: [issue]" --deps discovered-from:[current-id] --json
 
-**1. Plan Analysis**: Read the implementation plan file and identify individual tasks
-   - Parse the plan markdown for task sections
-   - Identify dependencies between tasks
-   - Estimate scope and complexity
-
-**2. Issue Sync**: Ensure Beads issues exist for tracking (via `/workflow-track` if not already done)
-```bash
-# Check if issues already exist for this plan
-uv run python _claude/lib/workflow.py list --json | grep -q "$PLAN_FILE" || echo "Consider running /workflow-track first"
-```
-
-**3. Invoke Executing-Plans Skill**: Use the superpowers skill for quality execution
-```
-Use the superpowers:executing-plans skill to execute the plan at: $PLAN_FILE
-
-Additional instructions for execution:
-- Dispatch appropriate sub-agents for specialized tasks (e.g., python-expert for Python)
-- Follow TDD workflow: write test, run to fail, implement, run to pass
-- Update Beads issue status as you progress through each task
-- Create follow-up issues for any discoveries during implementation
-```
-
-**4. Beads Integration During Execution**: For each task in the plan:
-   - Mark issue as in_progress: `uv run python _claude/lib/workflow.py update [id] --status in_progress`
-   - Execute the task using appropriate domain-specific agent
-   - Create follow-up issues for discoveries: `bd --sandbox create "Discovered: [issue]" --deps discovered-from:[current-id]`
-   - Mark issue as closed: `uv run python _claude/lib/workflow.py close [id] "[completion note]"`
-
-**5. Version Control**: Commit after EACH task completion
-```bash
-# After each task completes:
+# Commit after task (see git-conventions.md)
 git add .
 git commit -m "type(scope): [issue-id] description"
 ```
 
-See @.claude/rules/006-git-conventions.md for commit format and timing rules.
+## Related Files
 
----
-
-### Agent Dispatch
-
-**⚠️ Agent Dispatch:** Never implement code directly. See @.claude/rules/005-agent-dispatch.md for agent selection and dispatch patterns.
-
-For multi-agent coordination rules, see @.claude/rules/003-multi-agent-coordination.md
-
----
-
-### Before Using This Command
-
-- Ensure you have a completed implementation plan file (from writing-plans skill)
-- Verify Beads has been initialized with `bd init --quiet`
-- Confirm all project-specific rules in @CLAUDE.md
-
-### Execution Flow
-
-- The command will parse your plan and create Beads issues for each major task
-- Issues will be marked `in_progress` as they're executed
-- Completed tasks will be marked `closed` with completion notes
-- Dependencies will be properly managed based on plan sequence
-- If interrupted, cleanup trap will save state and attempt sync
-
-### Troubleshooting
-
-**If execution encounters issues:**
-```bash
-# Check current work state
-uv run python _claude/lib/workflow.py list --status in_progress --json
-
-# Check for blocked dependencies
-uv run python _claude/lib/workflow.py list --blocked --json
-
-# Verify plan file is readable
-cat "$PLAN_FILE" | head -20
-```
-
-See @CLAUDE.md for comprehensive troubleshooting solutions.
-
-**Example usage:**
-```
-/workflow-execute path/to/implementation/plan.md
-```
-
-This ensures your implementation work is properly tracked while maintaining the detailed execution approach from your executing-plans skill.
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/ai-native-instructions.md - Execution principles
+- @.claude/rules/multi-agent-coordination.md - Multi-agent rules
+- @.claude/rules/agent-dispatch.md - Agent selection
+- @.claude/rules/git-conventions.md - Commit format
+- @.claude/commands/workflow-track.md - Plan tracking

@@ -3,312 +3,250 @@ argument-hint: "[epic-id | task-id]"
 description: Course correction when human spots divergence mid-implementation
 ---
 
-## `/workflow-steer-correct` - Course correction
+## Intent
 
-Use this command when you discover AI divergence during implementation and need to correct course.
+Steer an epic back on track when completed work diverges from intent by creating a P0 correction task.
 
-This command helps you steer an epic back on track when completed work doesn't match your intent.
+## When to Use
 
-**Usage:** `/workflow-steer-correct [epic-id | task-id]`
+- Human review identifies divergence from intent
+- Completed tasks require rework
+- Pending tasks need context update before execution
 
-Example: `/workflow-steer-correct pydo-nh9` (epic)
-Example: `/workflow-steer-correct pydo-nh9.4` (specific task)
+## When NOT to Use
 
-### Environment Validation
+- Research question needs answering → use `/workflow-question-ask`
+- Research findings ready to apply → use `/workflow-steer-research`
+- Adding notes only → use `bd update --notes`
 
-**FIRST:** Run environment precheck before proceeding:
+## Context Required
+
+Run environment precheck first:
+
 ```bash
-uv run python _claude/lib/workflow.py precheck --name workflow-steer-correct
+uv run python .claude/lib/workflow.py precheck --name workflow-steer-correct
 ```
 
-If precheck fails, follow the guidance to resolve environment issues before continuing.
+Gather before proceeding:
 
----
+- Epic ID (or task ID to derive epic)
+- List of completed and remaining tasks
+- Human description of what needs correction
 
-### Agent Instructions
+## Decision Framework
 
-This command guides you through an interactive course correction workflow. Follow these steps:
+| State                    | Action                       | Outcome                 |
+| ------------------------ | ---------------------------- | ----------------------- |
+| Task ID provided         | Extract epic ID (before `.`) | Epic context available  |
+| Epic not found           | Error with guidance          | User corrects ID        |
+| No tasks affected        | Document in epic notes       | No correction task      |
+| Completed tasks affected | Mark as REOPEN               | Tasks need redo         |
+| Pending tasks affected   | Mark as UPDATE               | Tasks need context      |
+| User confirms plan       | Create P0 correction         | Surfaces first in ready |
 
-**1. Validate Epic/Task Exists**
+## Interactive Flow (CRITICAL)
 
-Get the issue details to determine if it's an epic or task:
-```bash
-uv run python _claude/lib/workflow.py show $EPIC_OR_TASK --json
+This command requires human interaction:
+
+| Step | Prompt                              | Wait For               |
+| ---- | ----------------------------------- | ---------------------- |
+| 1    | Show progress (completed/remaining) | -                      |
+| 2    | "What needs correction?"            | Correction description |
+| 3    | "Which tasks affected?"             | Task IDs or "all"      |
+| 4    | Show impact table                   | -                      |
+| 5    | "Apply correction? (Y/n)"           | Confirmation           |
+
+## Execution
+
+1. Validate epic/task exists, extract epic ID if task provided
+2. Display progress (completed vs remaining tasks)
+3. Ask human: "What needs correction?"
+4. Ask human: "Which tasks are affected?"
+5. Categorize impact (REOPEN completed, UPDATE pending)
+6. Show proposed plan, wait for confirmation
+7. Create P0 correction task under epic (`--parent --force`)
+8. Update epic steering log with CORRECT entry
+9. Reopen affected completed tasks with notes + blocking dependency
+10. Update affected pending tasks with context + blocking dependency
+11. **Related tasks review** (scan for stale references)
+12. Display summary and ready work
+
+## Related Tasks Review (CRITICAL)
+
+After updating directly affected tasks, scan ALL open tasks in the epic for stale references:
+
+**Process:**
+
+1. Extract correction keywords (the OLD value being replaced)
+2. Search all open task descriptions for those keywords
+3. Report matches with task ID and keyword found
+4. Ask user whether to update additional tasks
+
+**Decision Framework:**
+
+| User Response | Action                                            |
+| ------------- | ------------------------------------------------- |
+| Yes           | Update task descriptions with corrected details   |
+| No            | Continue, note in steering log that user declined |
+
+**Example:**
+
+```
+Correction: "JSON storage" → "SQLite storage"
+Keywords to scan: "json", "tasks.json", "JSON storage"
+
+Found stale references:
+- pydo-abc.7 (Docs): Contains "tasks.json" in description
+- pydo-abc.9 (Tests): Contains "JSON storage" in description
+
+Update these tasks with SQLite references? (Y/n)
 ```
 
-From the output, identify:
-- Issue type (epic or task)
-- Issue title
-- If it's a task, extract the parent epic ID (e.g., `pydo-nh9.4` → `pydo-nh9`)
+**Why this matters:** Without this check, tasks created before the correction may still reference obsolete approaches, confusing agents during execution.
 
-**2. Show Progress**
+## Success Criteria
 
-Display epic progress using the show-tasks command:
-```bash
-uv run python _claude/lib/workflow.py show-tasks $EPIC_ID
-```
+- [ ] Correction task created with P0 priority
+- [ ] All affected completed tasks reopened
+- [ ] All affected pending tasks updated with context
+- [ ] Blocking dependencies established (affected → correction)
+- [ ] Epic steering log updated with CORRECT entry
+- [ ] Related tasks scanned for stale references
+- [ ] User prompted about additional task updates (if matches found)
+- [ ] Correction task appears first in `bd ready`
 
-Then calculate and display:
-- Total tasks for this epic
-- Completed tasks count
-- Remaining tasks count
+## Steering Log Entry (CRITICAL)
 
-Show completed tasks:
-```bash
-uv run python _claude/lib/workflow.py list --status closed --json
-```
-Filter output to show only tasks starting with `$EPIC_ID.`
+Every correction MUST be logged in the epic description:
 
-Show remaining tasks:
-```bash
-uv run python _claude/lib/workflow.py list --status open --json
-```
-Filter output to show only tasks starting with `$EPIC_ID.`
-
-**3. Interactive: Ask What Needs Correction**
-
-Prompt the human:
-```
-⏺ Course Correction
-
-Please describe what needs to be corrected:
-
-(Example: 'Task 4 uses JSON storage but should use SQLite')
-
->
-```
-
-Wait for human response. Store as `CORRECTION_DESC`.
-
-**4. Interactive: Identify Affected Tasks**
-
-Show the remaining tasks again and ask which are affected:
-```
-Which tasks are affected by this correction?
-
-Enter task IDs separated by spaces (or 'all' for all remaining tasks):
-
-Remaining tasks:
-[List from step 2]
-
->
-```
-
-Wait for human response. Parse the input:
-- If "all": all remaining open tasks
-- Otherwise: specific task IDs provided
-
-Get affected task details:
-```bash
-uv run python _claude/lib/workflow.py show <task-id> --json
-```
-
-**5. Categorize Impact**
-
-For each affected task, determine the action needed:
-- **REOPEN**: If status is "closed" (completed but needs redo)
-- **UPDATE**: If status is "open" or "in_progress" (pending but needs context)
-
-Display impact table:
-```
-Affected tasks:
-┌──────────────┬─────────────────────────────────┬──────────────┐
-│ Task         │ Impact                          │ Action       │
-├──────────────┼─────────────────────────────────┼──────────────┤
-│ pydo-abc.4   │ Completed wrong - needs redo    │ REOPEN       │
-│ pydo-abc.5   │ Description needs update        │ UPDATE       │
-└──────────────┴─────────────────────────────────┴──────────────┘
-```
-
-**6. Show Proposed Plan**
-
-Present the correction plan:
-```
-Proposed correction plan:
-
-  1. Create correction task (P0): '$CORRECTION_DESC'
-  2. Reopen <count> task(s) with correction note
-  3. Update <count> task(s) with correction context
-  4. Add blocking dependencies: affected tasks wait on correction
-
-Apply course correction? (Y/n):
-```
-
-Wait for confirmation. If not confirmed, exit.
-
-**7. Create Correction Task**
-
-Create a P0 correction task under the epic:
-```bash
-uv run python _claude/lib/workflow.py show $EPIC_ID --json
-```
-
-Extract epic details, then create child task with full description:
-
-**Correction task description template:**
 ```markdown
+### [YYYY-MM-DDTHH:MM:SSZ] CORRECT: Short Description
+
+**Trigger:** Human review
+**Correction:** correction-task-id created
+**Reopened:** N task(s)
+**Updated:** N task(s)
+**Rationale:** Description of divergence
+```
+
+**Timestamp:** Use UTC (`date -u +"%Y-%m-%dT%H:%M:%SZ"`) for cross-timezone consistency.
+
+## Impact Categories
+
+| Task Status | Category | Action                                 |
+| ----------- | -------- | -------------------------------------- |
+| closed      | REOPEN   | Reopen + add blocking dependency       |
+| open        | UPDATE   | Add context note + blocking dependency |
+| in_progress | UPDATE   | Add context note + blocking dependency |
+
+## Edge Considerations
+
+- **Circular dependencies**: Check with `bd dep cycles` after adding dependencies
+- **No tasks affected**: Document concern in epic notes instead
+- **Scope unclear**: Break into smaller corrections
+- **User cancels**: Exit gracefully; make no changes
+
+## Reference Commands
+
+```bash
+# Environment precheck
+uv run python .claude/lib/workflow.py precheck --name workflow-steer-correct
+
+# Validate epic/task
+bd show $EPIC_OR_TASK --json | jq '.[0]'
+
+# Extract epic ID from task (e.g., pydo-abc.4 → pydo-abc)
+echo "$TASK_ID" | cut -d. -f1
+
+# List completed tasks for epic
+bd list --status closed --json | jq --arg prefix "$EPIC_ID." '.[] | select(.id | startswith($prefix))'
+
+# List remaining tasks for epic
+bd list --status open --json | jq --arg prefix "$EPIC_ID." '.[] | select(.id | startswith($prefix))'
+
+# Create P0 correction task (MUST use --parent --force)
+cat > /tmp/correction.md <<'EOF'
 **Correction Required**
 
 Human review identified divergence from intent:
 
-<CORRECTION_DESC>
+[CORRECTION_DESC]
 
-**Affected Tasks:** <count>
-- Reopen: <reopen_count>
-- Update: <update_count>
+**Affected Tasks:** N
+- Reopen: N
+- Update: N
 
 **Action Required:**
 Address this correction before proceeding with affected tasks.
-```
+EOF
+bd create "Correction: [short description]" --parent $EPIC_ID --force -t task -p 0 --body-file /tmp/correction.md --json
 
-Use Python workflow tool to create the task with `--parent $EPIC_ID --force` for hierarchical ID.
+# Reopen completed task
+bd update $TASK_ID --notes "Reopened for correction: [desc] (see $CORRECTION_ID)" --json
+bd update $TASK_ID --status open --json
+bd dep add $TASK_ID $CORRECTION_ID
 
-Note: The Python workflow tool `bd_create()` handles parent relationships. Store the returned correction task ID.
-
-**8. Reopen Affected Completed Tasks**
-
-For each task to reopen:
-```bash
-# Add note explaining reopen
-uv run python _claude/lib/workflow.py update $TASK_ID \
-  --notes "Reopened for course correction: $CORRECTION_DESC (see $CORRECTION_ID)"
-
-# Change status to open
-uv run python _claude/lib/workflow.py update $TASK_ID --status open
-
-# Add blocking dependency (use bd dep directly - not in Python tool yet)
-bd --sandbox dep add $TASK_ID $CORRECTION_ID
-```
-
-Display progress as you go.
-
-**9. Update Pending Tasks**
-
-For each task to update, append correction context to description:
-
-Get current description:
-```bash
-uv run python _claude/lib/workflow.py show $TASK_ID --json
-```
-
-Append to description:
-```markdown
----
-
-**Steering Update (<date>):**
-
-**Note:** Blocked pending correction: <CORRECTION_DESC> (see <CORRECTION_ID>)
-```
-
-Update the task:
-```bash
-uv run python _claude/lib/workflow.py update $TASK_ID --description="<new_description>"
-
-# Add blocking dependency
-bd --sandbox dep add $TASK_ID $CORRECTION_ID
-```
-
-**10. Display Summary**
-
-Show completion summary:
-```
-⏺ Course Correction Complete
-
-Summary:
-┌─────────────────────────────────────────────────────────┐
-│ Created:   1 correction task (<CORRECTION_ID>)          │
-│ Reopened:  <count> task(s)                              │
-│ Updated:   <count> task(s)                              │
-└─────────────────────────────────────────────────────────┘
-
-Ready work (correction-first):
-```
-
-Show ready work (correction will be P0, so it appears first):
-```bash
-uv run python _claude/lib/workflow.py ready
-```
-
-Display:
-```
-To continue: /workflow-work (will pick up P0 correction first)
-```
+# Update pending task with blocking
+cat > /tmp/task-context.md <<'EOF'
+[current description]
 
 ---
 
-### Before Using This Command
+**Steering Update (YYYY-MM-DD):**
 
-- Epic must be in progress with some tasks completed
-- Human has reviewed work and identified divergence
-- Understand which tasks are affected by the correction
+**Note:** Blocked pending correction: [desc] (see $CORRECTION_ID)
+EOF
+bd update $TASK_ID --body-file /tmp/task-context.md --json
+bd dep add $TASK_ID $CORRECTION_ID
 
-### After Using This Command
+# Check for circular dependencies
+bd dep cycles
 
-- Correction task created with P0 priority (surfaces first in ready work)
-- Affected completed tasks reopened with notes
-- Affected pending tasks updated and blocked
-- Blocking dependencies ensure correction happens first
-- Epic can continue with corrected direction
+# Update epic steering log (MUST use --body-file)
+cat > /tmp/epic-update.md <<'EOF'
+[full epic description with new CORRECT entry]
+EOF
+bd update $EPIC_ID --body-file /tmp/epic-update.md --json
 
-### Workflow Example
+# Check ready work (P0 correction should appear first)
+bd ready --json | jq -r '.[] | "[\(.id)] P\(.priority) \(.title)"'
+
+# Related tasks review: scan for stale keywords
+# Extract keywords from correction (e.g., "json", "tasks.json")
+KEYWORDS="json|tasks.json"
+bd list --parent $EPIC_ID --status open --json | jq -r --arg kw "$KEYWORDS" \
+  '.[] | select(.description | test($kw; "i")) | "[\(.id)] \(.title)"'
+```
+
+## Workflow Example
 
 ```
-Epic: pydo-nh9 - Build pydo CLI
-├─ pydo-nh9.1 ✅ Project Setup (complete)
-├─ pydo-nh9.2 ✅ Exceptions Module (complete)
-├─ pydo-nh9.3 ✅ Task Model (complete)
-├─ pydo-nh9.4 ✅ Storage Layer (complete - WRONG!)
-├─ pydo-nh9.5 ⏳ CLI Add Command (pending)
-├─ pydo-nh9.6 ⏳ CLI List Command (pending)
+Epic: pydo-abc - Build pydo CLI
+├─ pydo-abc.1 ✅ Project Setup (complete)
+├─ pydo-abc.2 ✅ Exceptions Module (complete)
+├─ pydo-abc.3 ✅ Task Model (complete)
+├─ pydo-abc.4 ✅ Storage Layer (complete - WRONG!)
+├─ pydo-abc.5 ⏳ CLI Add Command (pending)
 └─ ...
 
 Human discovers: "Storage uses JSON but should use SQLite!"
 
-/workflow-steer-correct pydo-nh9
-
-# Interactive prompts:
-# - Shows progress (4 complete, 8 remaining)
-# - Asks: "What needs correction?"
-# - Human: "Task 4 uses JSON storage but should use SQLite"
-# - Shows affected tasks: pydo-nh9.4 through pydo-nh9.8
-# - Confirms correction plan
-
-# Results:
-# - Creates pydo-nh9.13 "Correction: Refactor storage to SQLite" (P0)
-# - Reopens pydo-nh9.4 with note about correction
-# - Updates pydo-nh9.5-8: adds blocking dependency on pydo-nh9.13
-# - Correction surfaces first in ready work
+/workflow-steer-correct pydo-abc
+  ├─> Shows progress (4 complete, 8 remaining)
+  ├─> Asks: "What needs correction?"
+  ├─> Human: "Task 4 uses JSON storage but should use SQLite"
+  ├─> Shows affected tasks, asks confirmation
+  ├─> Creates pydo-abc.13 "Correction: Refactor to SQLite" (P0)
+  ├─> Reopens pydo-abc.4 with correction note
+  ├─> Updates pydo-abc.5-8: adds blocking dependency
+  └─> Correction surfaces first in ready work
 ```
 
-### Troubleshooting
+## Related Files
 
-**If epic/task not found:**
-```bash
-# List active epics
-uv run python _claude/lib/workflow.py list --json
-# Filter for type=epic, status=open
-
-# Show tasks for epic
-uv run python _claude/lib/workflow.py show-tasks $EPIC_ID
-```
-
-**If no tasks are affected:**
-- May be exploratory concern only
-- Document in epic notes instead
-- No correction task needed
-
-**If correction scope is unclear:**
-- Refine understanding before proceeding
-- Break into multiple smaller corrections
-- Consult implementation plan for context
-
-See @CLAUDE.md for comprehensive troubleshooting.
-
----
-
-### Related Files
-
-- @.claude/commands/workflow-question-ask.md - Creates research issues
 - @CLAUDE.md - Main workflow instructions
-- @.claude/rules/004-beads-json-patterns.md - Beads JSON patterns
-- @.claude/rules/003-multi-agent-coordination.md - Multi-agent coordination
+- @.claude/rules/ai-native-instructions.md - Execution principles
+- @.claude/rules/beads-patterns.md - --body-file requirement
+- @.claude/rules/multi-agent-coordination.md - Multi-agent coordination
+- @.claude/commands/workflow-overview.md - View steering log
+- @.claude/commands/workflow-work.md - Resume corrected work

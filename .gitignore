@@ -8,6 +8,7 @@ Thumbs.db
 # Editor/IDE
 .idea/
 .vscode/
+.obsidian/
 *.swp
 *.swo
 *~
@@ -45,3 +46,10 @@ tmp/
 
 # Serena MCP cache
 .serena/
+.claude/hook_serena_awareness_session_markers/
+
+# Claude Code personal settings (allow overrides)
+.claude/settings.local.json
+
+# Archives (hide from AI context)
+*.zip

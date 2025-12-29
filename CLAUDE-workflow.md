@@ -1,21 +1,6 @@
+<!-- CLAUDE-workflow.md v1.0.0 | Last updated: 2025-12-28 -->
+
 # Agentic Development Workflow Instructions
-
-<project_context>
-
-## Project Information
-
-<!-- CUSTOMIZE THIS SECTION FOR YOUR PROJECT -->
-
-```
-Project: [Your Project Name]
-Description: [Brief description of what this project does]
-Tech Stack: [Languages, frameworks, tools]
-Design Doc: [Path to design document, e.g., docs/plans/your-design.md]
-```
-
-<!-- END CUSTOMIZATION SECTION -->
-
-</project_context>
 
 <ai_instruction_principles>
 
@@ -113,9 +98,9 @@ Process:
 Result: Clean completion, all work tracked
 
 Branch Behavior (feature/* branches):
-- Epic complete → Prompt: merge to main or create PR
-- Epic incomplete → Stay on branch, push if remote exists
-- Protected branch flag → Create/update PR instead of merge
+- Epic complete -> Prompt: merge to main or create PR
+- Epic incomplete -> Stay on branch, push if remote exists
+- Protected branch flag -> Create/update PR instead of merge
 ```
 
 ### `/workflow-check` - Review project status
@@ -175,9 +160,9 @@ Process:
 Result: Task tracked from start to finish without epic ceremony
 
 When NOT to Use:
-- Task touches 3+ files → use /workflow-start
-- Task relates to active epic → use /workflow-steer-correct
-- Complex change requiring design → use brainstorming + /workflow-start
+- Task touches 3+ files -> use /workflow-start
+- Task relates to active epic -> use /workflow-steer-correct
+- Complex change requiring design -> use brainstorming + /workflow-start
 ```
 
 <workflow_principles>
@@ -224,44 +209,44 @@ Beads (`bd`) and TodoWrite serve different purposes:
 ### Workflow Lifecycle
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                     AGENTIC WORKFLOW LIFECYCLE                   │
-└──────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                     AGENTIC WORKFLOW LIFECYCLE                   |
++------------------------------------------------------------------+
 
   SETUP          PLANNING            TRACKING         EXECUTION
-    │                │                   │                │
-    ▼                ▼                   ▼                ▼
-/workflow-init → /workflow-start → /workflow-track → /workflow-execute
-    │           (create epic)    (plan → issues)    (run full plan)
-    │                │                   │                │
-    │                ▼                   │           OR   ▼
-    │           brainstorm +             │        /workflow-work ◄──┐
-    │           writing-plans            │        (task by task)    │
-    │                │                   │                │         │
-    │                └───────────────────┘                │         │
-    │                                                     │         │
-    │              MONITORING & STEERING                  │         │
-    │                  │                                  │         │
-    │     /workflow-check (status review)                 │         │
-    │     /workflow-health (diagnostics)                  │         │
-    │     /workflow-overview (view plan state)            │         │
-    │     /workflow-config (manage flags)                 │         │
-    │     /workflow-question-ask (capture research)       │         │
-    │     /workflow-steer-research (resolve research)     │         │
-    │     /workflow-steer-correct (course correction)     │         │
-    │     /workflow-do (quick isolated task)              │         │
-    │                                                     │         │
-    │                                    SESSION END      │         │
-    │                                        │            │         │
-    └────────────────────────────────────────┼────────────┘         │
-                                             ▼                      │
-                                      /workflow-land                │
-                                             │                      │
-                           ┌─────────────────┴─────────────────┐    │
-                           │                                   │    │
+    |                |                   |                |
+    v                v                   v                v
+/workflow-init -> /workflow-start -> /workflow-track -> /workflow-execute
+    |           (create epic)    (plan -> issues)    (run full plan)
+    |                |                   |                |
+    |                v                   |           OR   v
+    |           brainstorm +             |        /workflow-work <--+
+    |           writing-plans            |        (task by task)    |
+    |                |                   |                |         |
+    |                +-------------------+                |         |
+    |                                                     |         |
+    |              MONITORING & STEERING                  |         |
+    |                  |                                  |         |
+    |     /workflow-check (status review)                 |         |
+    |     /workflow-health (diagnostics)                  |         |
+    |     /workflow-overview (view plan state)            |         |
+    |     /workflow-config (manage flags)                 |         |
+    |     /workflow-question-ask (capture research)       |         |
+    |     /workflow-steer-research (resolve research)     |         |
+    |     /workflow-steer-correct (course correction)     |         |
+    |     /workflow-do (quick isolated task)              |         |
+    |                                                     |         |
+    |                                    SESSION END      |         |
+    |                                        |            |         |
+    +----------------------------------------+------------+         |
+                                             v                      |
+                                      /workflow-land                |
+                                             |                      |
+                           +-----------------+-----------------+    |
+                           |                                   |    |
                      epic complete?                      epic incomplete
-                           │                                   │    │
-                           ▼                                   └────┘
+                           |                                   |    |
+                           v                                   +----+
                     merge/PR + done                     (stay on branch,
                                                          next session)
 ```
@@ -391,8 +376,8 @@ bd create "Implement user login" \
 
 ### Map Hierarchies Properly
 
-- Feature epic → Beads epic (type: epic, e.g., `myproj-abc`)
-- Plan tasks → Beads child issues (use `--parent <epic-id> --force`, e.g., `myproj-abc.1`)
+- Feature epic -> Beads epic (type: epic, e.g., `myproj-abc`)
+- Plan tasks -> Beads child issues (use `--parent <epic-id> --force`, e.g., `myproj-abc.1`)
 
 Example:
 
@@ -553,7 +538,7 @@ Run `bd sync` at task boundaries (start/end of each task).
 
 Beads auto-detects sandboxed environments since v0.21.1. When detected:
 
-- You will see: "ℹ️ Sandbox detected, using direct mode"
+- You will see: "Sandbox detected, using direct mode"
 - Automatic background sync is disabled
 - Manual `bd sync` still works for team collaboration
 
@@ -583,7 +568,7 @@ bd sync --flush-only  # Commits to beads-metadata branch
 ```
 
 **Periodic merge:**
-Human creates PR/MR to merge `beads-metadata` → `main`
+Human creates PR/MR to merge `beads-metadata` -> `main`
 
 ### GitLab Enterprise Setup
 
@@ -612,13 +597,13 @@ Use Merge Requests (MR) instead of Pull Requests (PR). All git operations are id
 Plan files are **ephemeral** - they exist only during drafting and review:
 
 ```
-[DRAFT]   → Plan file created by writing-plans skill
-    ↓
-[REVIEW]  → Human reviews and approves
-    ↓
-[TRACK]   → /workflow-track copies to Beads, DELETES file
-    ↓
-[WORK]    → Execute from Beads only
+[DRAFT]   -> Plan file created by writing-plans skill
+    |
+[REVIEW]  -> Human reviews and approves
+    |
+[TRACK]   -> /workflow-track copies to Beads, DELETES file
+    |
+[WORK]    -> Execute from Beads only
 ```
 
 After tracking, the plan content lives in the **epic description**.
@@ -653,7 +638,7 @@ All plan modifications are logged in the epic description:
 ### [2025-12-22T14:30:00Z] STEER: Storage Redesign
 
 **Trigger:** Research myproj-xyz
-**Decision:** JSON → SQLite
+**Decision:** JSON -> SQLite
 **Modified:** myproj-abc.4
 **Added:** myproj-abc.4a, myproj-abc.4b
 **Rationale:** Concurrent access requirement
@@ -763,7 +748,7 @@ This workflow requires specific Beads CLI versions for full functionality:
 | --------------- | --------------- | ------------------------------------------------- |
 | < 0.37.0        | **Unsupported** | Missing `--parent` flags, workflow will fail      |
 | 0.37.0 - 0.39.0 | Supported       | Core features work, some new commands unavailable |
-| ≥ 0.39.1        | **Recommended** | All documented features available                 |
+| >= 0.39.1       | **Recommended** | All documented features available                 |
 
 **Check your version:**
 
@@ -817,6 +802,7 @@ bash: bd: command not found
    ```
 
 4. **Add to PATH if needed:**
+
    ```bash
    export PATH="$PATH:$(go env GOPATH)/bin"
    # Add to ~/.bashrc or ~/.zshrc for persistence
@@ -853,6 +839,7 @@ Error: no .beads directory found
    ```
 
 3. **Verify initialization:**
+
    ```bash
    ls -la .beads/
    # Should show: beads.db, issues.jsonl, README.md, etc.
@@ -962,16 +949,15 @@ bd dep cycles
 **Solutions:**
 
 1. **If issues are blocked:**
-
    - Resolve blocking issues first
    - Or remove blocking dependencies: `bd dep remove [from-id] [to-id]`
 
 2. **If no open issues:**
-
    - All work complete!
    - Create new work: `/workflow-start "Next feature"`
 
 3. **If blocked by circular dependencies:**
+
    ```bash
    bd dep cycles  # Detect cycles
    bd dep remove [from-id] [to-id]  # Break cycle
@@ -1014,22 +1000,22 @@ When something goes wrong, try these in order:
 
 ```
 1. FIRST: bd doctor --fix (v0.38.0+)
-   └─ Auto-repair common issues (recommended first step)
+   +-- Auto-repair common issues (recommended first step)
 
 2. IF doctor fails: bd import --force
-   └─ Rebuilds database from JSONL (fixes most sync issues)
+   +-- Rebuilds database from JSONL (fixes most sync issues)
 
 3. IF import fails: bd reset
-   └─ Complete database reset (keeps JSONL, faster than manual recovery)
+   +-- Complete database reset (keeps JSONL, faster than manual recovery)
 
 4. IF still broken: Database Corruption Recovery (below)
-   └─ Manual backup, reinitialize, reimport from JSONL
+   +-- Manual backup, reinitialize, reimport from JSONL
 
 5. IF context issues: Session State Recovery (below)
-   └─ Check in-progress issues, resume or reset status
+   +-- Check in-progress issues, resume or reset status
 
 6. LAST RESORT: Full Reset (below)
-   └─ Backup everything, delete DB, start fresh
+   +-- Backup everything, delete DB, start fresh
 ```
 
 **Rule:** Never jump to Full Reset without trying simpler fixes first.

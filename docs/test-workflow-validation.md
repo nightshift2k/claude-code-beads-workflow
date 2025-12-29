@@ -1,13 +1,14 @@
 # Agentic Workflow - Validation Test
 
-This document provides a complete, step-by-step test to validate that the agentic workflow works correctly. Follow this exactly in a fresh Claude Code instance.
+This document provides a complete test to validate the agentic workflow. Follow these steps exactly in a fresh Claude Code instance.
 
 ## Purpose
 
-Build a simple Python CLI task manager (`pydo`) while exercising every workflow command. This validates:
-- Issue tracking with Beads integrates properly
+Build a Python CLI task manager (`pydo`) while exercising every workflow command. This validates:
+
+- Beads issue tracking integrates properly
 - Workflow commands produce expected results
-- Error recovery works when things go wrong
+- Error recovery works
 - Multi-session continuity functions correctly
 
 ---
@@ -19,9 +20,9 @@ Build a simple Python CLI task manager (`pydo`) while exercising every workflow 
 Run these in your terminal FIRST:
 
 ```bash
-# Check Beads CLI (minimum version: 0.2.0)
+# Check Beads CLI (minimum version: 0.37.0, recommended: 0.39.1+)
 bd version
-# Expected: bd version 0.2.0 or higher
+# Expected: bd version 0.37.0 or higher
 
 # Check uv (Python package manager, minimum version: 0.1.0)
 uv --version
@@ -39,6 +40,7 @@ git --version
 **If tools are missing, install them:**
 
 - **bd (Beads CLI)**:
+
   ```bash
   # Via Go
   go install github.com/steveyegge/beads/cmd/bd@latest
@@ -47,9 +49,11 @@ git --version
   # Or via Homebrew (macOS)
   brew install steveyegge/tap/beads
   ```
+
   Reference: https://github.com/steveyegge/beads
 
 - **uv (Python package manager)**:
+
   ```bash
   # Via curl (Unix)
   curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -57,6 +61,7 @@ git --version
   # Or via Homebrew (macOS)
   brew install uv
   ```
+
   Reference: https://docs.astral.sh/uv/getting-started/installation/
 
 - **Python 3.9+**: If not available, install via `uv python install 3.9` or higher
@@ -78,17 +83,19 @@ cd ~/pydo-validation-test
 **IMPORTANT:** Set the BOILERPLATE path to your actual workflow source location before running these commands.
 
 ```bash
-# Set this to YOUR workflow source location
-# Examples:
-#   BOILERPLATE=~/code/claude-code-beads-workflow
-#   BOILERPLATE=/Users/yourname/projects/claude-code-beads-workflow
-#   BOILERPLATE=/path/to/wherever/you/cloned/the/workflow
-BOILERPLATE=~/code/claude-code-beads-workflow
+# REQUIRED: Set this to YOUR workflow source location before running
+# Uncomment and customize ONE of the examples below:
+#   export BOILERPLATE=~/code/claude-code-beads-workflow
+#   export BOILERPLATE=/Users/yourname/projects/claude-code-beads-workflow
+#   export BOILERPLATE=/path/to/wherever/you/cloned/the/workflow
 
-# Verify the path exists before proceeding
+# Use environment variable, fail with clear error if not set
+: "${BOILERPLATE:?ERROR: BOILERPLATE environment variable not set. Set it to your workflow source location before running.}"
+
+# Verify the path exists
 if [ ! -d "$BOILERPLATE" ]; then
   echo "ERROR: BOILERPLATE directory not found at: $BOILERPLATE"
-  echo "Update the BOILERPLATE variable to point to your actual workflow source location"
+  echo "Verify your BOILERPLATE path is correct and the directory exists"
   exit 1
 fi
 
@@ -134,17 +141,17 @@ ls -la .claude/
 # lib/
 # rules/
 
-# Verify command files (should be 11 workflow-*.md files)
-ls .claude/commands/ | wc -l
-# Expected: 11
+# Verify command files (should be 14 workflow-*.md files)
+ls .claude/commands/workflow-*.md | wc -l
+# Expected: 14
 
 # Verify key files exist and are non-empty
 ls -lh .claude/commands/workflow-*.md | awk '{if ($5 == "0") print "ERROR: " $9 " is empty"; else print "OK: " $9}'
 
 # Verify workflow.py exists and is valid
-if [ -f "_claude/lib/workflow.py" ]; then
+if [ -f ".claude/lib/workflow.py" ]; then
   echo "OK: workflow.py exists"
-  if uv run python -c "import ast; ast.parse(open('_claude/lib/workflow.py').read())" 2>/dev/null; then
+  if uv run python -c "import ast; ast.parse(open('.claude/lib/workflow.py').read())" 2>/dev/null; then
     echo "OK: workflow.py is valid Python"
   else
     echo "ERROR: workflow.py has syntax errors"
@@ -166,9 +173,9 @@ else
   echo "ERROR: pydo-design.md not found"
 fi
 
-# Count total files copied (should be around 16-18)
+# Count total files copied (should be around 20-22)
 find .claude docs CLAUDE.md -type f | wc -l
-# Expected: 16-18 files
+# Expected: 20-22 files
 ```
 
 ### 2.4 Customize CLAUDE.md for pydo
@@ -177,15 +184,18 @@ Edit `CLAUDE.md` and update the **Project Information** section at the top:
 
 ```markdown
 ## Project Information
+
 <!-- CUSTOMIZE THIS SECTION FOR YOUR PROJECT -->
+
 Project: pydo
 Description: CLI task manager with add, list, complete, delete commands
 Tech Stack: Python 3.9+, Click, pytest, uv, JSON storage
 Design Doc: docs/plans/pydo-design.md
+
 <!-- END CUSTOMIZATION SECTION -->
 ```
 
-**That's it** - the rest of CLAUDE.md is generic workflow instructions that work for any project.
+The rest of CLAUDE.md contains generic workflow instructions that work for any project.
 
 ### 2.5 Initialize Git
 
@@ -208,7 +218,7 @@ Verify your directory structure:
 ```
 ~/pydo-validation-test/
 ├── .claude/
-│   ├── commands/           # 11 workflow-*.md files
+│   ├── commands/           # 14 workflow-*.md files
 │   │   ├── workflow-init.md
 │   │   ├── workflow-start.md
 │   │   ├── workflow-track.md
@@ -216,18 +226,21 @@ Verify your directory structure:
 │   │   ├── workflow-work.md
 │   │   ├── workflow-land.md
 │   │   ├── workflow-check.md
+│   │   ├── workflow-do.md
 │   │   ├── workflow-health.md
+│   │   ├── workflow-overview.md
+│   │   ├── workflow-config.md
 │   │   ├── workflow-question-ask.md
 │   │   ├── workflow-steer-research.md
 │   │   └── workflow-steer-correct.md
-│   ├── lib/
+│   ├── lib/                # Shared utilities
 │   │   └── workflow.py     # Python workflow CLI tool (stdlib only)
-│   └── rules/
-│       ├── 001-project-principles.md
-│       ├── 003-multi-agent-coordination.md
-│       ├── 004-beads-json-patterns.md
-│       ├── 005-agent-dispatch.md
-│       └── 006-git-conventions.md
+│   └── rules/              # Project rules
+│       ├── project-principles.md
+│       ├── multi-agent-coordination.md
+│       ├── beads-patterns.md
+│       ├── agent-dispatch.md
+│       └── git-conventions.md
 ├── docs/
 │   └── plans/
 │       └── pydo-design.md
@@ -250,7 +263,7 @@ cd ~/pydo-validation-test
 claude
 ```
 
-**Session Recording:** Use Claude Code's `/export` command before exiting to save a clean transcript.
+**Session Recording:** Run `/export` before exiting to save a clean transcript.
 
 ---
 
@@ -259,40 +272,46 @@ claude
 ### 4.1 Initialize Workflow Environment
 
 **Command to Claude:**
+
 ```
 /workflow-init
 ```
 
 **Expected behavior:**
+
 - Creates `.beads/` directory if missing
 - Validates environment (bd CLI, Python)
 - Reports "Environment ready for agentic workflow"
 
 **Checkpoint:** Verify `.beads/` directory exists:
+
 ```bash
 # Verify .beads directory was created
 ls -la .beads/
 # Expected: beads.db, config.yaml, metadata.json, README.md, .gitignore
 # Note: issues.jsonl appears after first issue is created
 
-# Verify prefix is 8 chars or less (including hyphen)
+# Verify prefix follows naming rules
 bd config | grep prefix
-# Expected: Shows prefix like "pydo-" (5 chars total)
+# Expected: Shows prefix like "pydo-" (lowercase, starts with letter, ends with hyphen)
 ```
 
 ### 4.2 Create Feature Epic
 
 **Command to Claude:**
+
 ```
 /workflow-start Build pydo - a Python CLI task manager with add, list, complete, delete commands and priority support
 ```
 
 **Expected behavior:**
+
 - Creates a Beads epic issue
 - Returns epic ID (e.g., `pydo-abc`)
 - Epic is now trackable with `bd show <id>`
 
 **Checkpoint:** Verify epic created:
+
 ```bash
 # List all Beads issues
 bd list --json
@@ -314,6 +333,7 @@ Record the epic ID: `____________`
 The design document `docs/plans/pydo-design.md` (copied in Part 2) contains the full specification. Now ask Claude to create an implementation plan from it.
 
 **Command to Claude:**
+
 ```
 I have a design document at docs/plans/pydo-design.md for a CLI task manager called pydo.
 
@@ -323,13 +343,22 @@ The plan should have bite-sized tasks with proper dependencies, following TDD (w
 ```
 
 **Expected behavior:**
+
 - Claude reads pydo-design.md
 - Uses the writing-plans skill
 - Creates implementation plan with 6-8 tasks
 - Each task has exact file paths, code examples, and test commands
 - Plan saved to `docs/plans/` directory (e.g., `pydo-implementation-plan.md`)
 
+**Note on Plan File Lifecycle:**
+The plan file is TEMPORARY. After `/workflow-track`:
+
+- Plan content is stored in epic description
+- Plan file is DELETED
+- Use `/workflow-overview` to see plan state
+
 **Checkpoint:** Verify plan exists:
+
 ```bash
 # List all plan documents
 ls docs/plans/
@@ -347,6 +376,7 @@ cat docs/plans/pydo-implementation-plan.md | head -50
 ### 6.1 Convert Plan to Beads Issues
 
 **Command to Claude:**
+
 ```
 /workflow-track docs/plans/pydo-implementation-plan.md
 ```
@@ -354,12 +384,14 @@ cat docs/plans/pydo-implementation-plan.md | head -50
 (Adjust path if your implementation plan has a different name)
 
 **Expected behavior:**
+
 - Claude reads the specified implementation plan
 - Creates Beads issues for each task
 - Sets up dependency relationships
 - Links all issues to the feature epic
 
 **Checkpoint:** Verify issues created with dependencies:
+
 ```bash
 # List all issues with details
 bd list --json | head -50
@@ -389,6 +421,7 @@ This uses the `superpowers:executing-plans` skill with domain-specific agents fo
 **Expected Duration:** 10-20 minutes for the pydo project (5-8 tasks).
 
 **Command to Claude:**
+
 ```
 /workflow-execute docs/plans/pydo-implementation-plan.md
 ```
@@ -396,6 +429,7 @@ This uses the `superpowers:executing-plans` skill with domain-specific agents fo
 (Adjust path if your implementation plan has a different name)
 
 **Expected behavior:**
+
 - Invokes the `superpowers:executing-plans` skill
 - Uses `python-expert` agent for Python implementation
 - Follows TDD workflow (test first, run to fail, implement, run to pass)
@@ -405,7 +439,8 @@ This uses the `superpowers:executing-plans` skill with domain-specific agents fo
 
 **Progress Indicators to Watch For:**
 
-During execution, you should see:
+During execution, expect to see:
+
 1. Task batch announcements (e.g., "Batch 1: Setting up project structure")
 2. TDD cycle messages (e.g., "Writing test for Task model", "Test failed as expected", "Implementing model", "Test passed")
 3. Beads status updates (e.g., "Marking bd-xxx.1 as in_progress", "Closing bd-xxx.1 as completed")
@@ -413,6 +448,7 @@ During execution, you should see:
 5. Batch completion summaries with next steps
 
 **Checkpoint during execution:**
+
 ```bash
 # In another terminal window, monitor progress:
 bd list --status in_progress --json  # See current work
@@ -422,7 +458,7 @@ bd list --status completed --json    # See completed work
 watch -n 5 'find pydo -type f 2>/dev/null | wc -l'
 ```
 
-Skip to **7.4 Run Tests** when execution completes.
+Skip to **7.4 Run Tests** after execution completes.
 
 ---
 
@@ -433,11 +469,13 @@ Use this approach if you want fine-grained control over each task.
 #### 7.1 Find Available Work
 
 **Command to Claude:**
+
 ```
 /workflow-work
 ```
 
 **Expected behavior:**
+
 - Shows ready (unblocked) issues
 - Recommends which to work on first
 - Waits for you to select one
@@ -447,17 +485,20 @@ Use this approach if you want fine-grained control over each task.
 #### 7.2 Implement First Task
 
 **Command to Claude:**
+
 ```
 Implement the first ready task (project setup - pyproject.toml and directory structure)
 ```
 
 **Expected behavior:**
+
 - Claude claims the issue (`bd update <id> --status in_progress`)
 - Creates project structure
 - Creates pyproject.toml with dependencies
 - Marks issue complete when done
 
 **Checkpoint:** Verify files created:
+
 ```bash
 # List pydo directory structure
 ls -la pydo/
@@ -471,6 +512,7 @@ cat pyproject.toml
 #### 7.3 Continue Implementation
 
 **Command to Claude:**
+
 ```
 /workflow-work
 ```
@@ -483,6 +525,7 @@ Then implement each task in order. For each task:
 4. Mark complete when done
 
 **Key tasks to implement:**
+
 - [ ] models.py - Task dataclass
 - [ ] exceptions.py - Custom exceptions
 - [ ] storage.py - JSON persistence
@@ -490,6 +533,7 @@ Then implement each task in order. For each task:
 - [ ] tests/ - Test suite
 
 **Checkpoint after each task:**
+
 ```bash
 # See completed work
 bd list --status completed --json
@@ -506,16 +550,19 @@ bd ready --json
 After cli.py is complete:
 
 **Command to Claude:**
+
 ```
 Run the test suite and fix any failures
 ```
 
 **Expected behavior:**
+
 - Installs dependencies if needed (via uv)
 - Runs pytest
 - All tests pass (or Claude fixes failures)
 
 **Checkpoint:**
+
 ```bash
 # Navigate to pydo directory, install dependencies, and run tests
 cd pydo && uv sync && uv run pytest -v
@@ -529,11 +576,13 @@ cd pydo && uv sync && uv run pytest -v
 ### 8.1 Mid-Session Status Check
 
 **Command to Claude:**
+
 ```
 /workflow-check
 ```
 
 **Expected behavior:**
+
 - Shows summary of open/completed issues
 - Shows any blocked work
 - Identifies what's left to do
@@ -541,11 +590,13 @@ cd pydo && uv sync && uv run pytest -v
 ### 8.2 Proper Session Landing
 
 **Command to Claude:**
+
 ```
 /workflow-land
 ```
 
 **Expected behavior:**
+
 - Creates issues for any discovered follow-up work
 - Closes all completed issues with reasons
 - Updates in-progress issues with notes
@@ -553,6 +604,7 @@ cd pydo && uv sync && uv run pytest -v
 - Optionally commits to git
 
 **Checkpoint:**
+
 ```bash
 # Verify all issues have updated status
 bd list --json
@@ -565,166 +617,235 @@ ls -lh .beads/issues.jsonl
 
 ---
 
-## Part 9: Error Recovery Testing
+## Part 9: Steering & Course Correction
 
-### 9.1 Test Health Diagnostics
+This critical test verifies that steering mandates structural changes.
+
+### Why These Outcomes Are Mandatory
+
+This test validates the core steering contract:
+
+1. **Block tasks** - Research must identify affected work that cannot proceed until resolved
+2. **Rewrite tasks** - Research findings must change implementation approach (not just add notes)
+3. **Add tasks** - Research complexity requires new work items (schema design, migration, etc.)
+
+Missing any outcome means steering failed to maintain plan integrity.
+Partial steering (adding notes without rewriting) defeats the steering mechanism's purpose.
+
+### 9.1 Inject Research Question
+
+After completing Tasks 1-2 (setup, models), but BEFORE completing Task 3 (storage):
 
 **Command to Claude:**
+
+```
+/workflow-question-ask The pydo design specifies JSON file storage, but we've discovered it will be used in CI/CD pipelines where multiple agents may update tasks concurrently. This introduces race conditions with JSON. Should we switch to SQLite with proper locking?
+```
+
+**Expected behavior:**
+
+- Creates research issue blocking storage task
+- Stores full context in issue description
+
+**Checkpoint - Verify blocking:**
+
+```bash
+RESEARCH_ID=$(bd list --json | jq -r '[.[] | select(.title | contains("Research:"))][0].id')
+if [ -z "$RESEARCH_ID" ]; then
+  echo "ERROR: No research issue found - /workflow-question-ask may have failed"
+  exit 1
+fi
+echo "Research issue: $RESEARCH_ID"
+
+# Verify it blocks something
+BLOCKED=$(bd show $RESEARCH_ID --json | jq '.[0].blocks | length')
+echo "Blocked tasks: $BLOCKED"
+# Expected: >= 1
+```
+
+### 9.2 Resolve Research (Forces Modification)
+
+**Command to Claude:**
+
+```
+/workflow-steer-research $RESEARCH_ID
+```
+
+**Expected behavior:**
+
+- Research concludes SQLite is necessary
+- Storage task REWRITTEN (JSON → SQLite)
+- New tasks ADDED (schema, migration)
+- Steering log UPDATED in epic
+
+**Checkpoint - Verify mandatory outcomes:**
+
+```bash
+# Requirement 1: Tasks were blocked (already verified above)
+
+# Requirement 2: Storage task rewritten
+STORAGE_TASK=$(bd list --json | jq -r --arg prefix "$EPIC_ID." '[.[] | select(.id | startswith($prefix)) | select(.title | contains("storage") or .title | contains("Storage"))][0].id')
+if [ -z "$STORAGE_TASK" ]; then
+  echo "ERROR: No storage task found under epic"
+  exit 1
+fi
+STORAGE_DESC=$(bd show $STORAGE_TASK --json | jq -r '.[0].description')
+if echo "$STORAGE_DESC" | grep -qi "sqlite"; then
+  echo "PASS: Storage task rewritten for SQLite"
+else
+  echo "FAIL: Storage task should mention SQLite"
+fi
+
+# Requirement 3: New tasks added
+NEW_TASKS=$(bd list --json | jq --arg prefix "$EPIC_ID." '[.[] | select(.id | startswith($prefix)) | select(.title | test("schema|migration|Schema|Migration"; "i"))] | length')
+if [ "$NEW_TASKS" -ge 1 ]; then
+  echo "PASS: New tasks added ($NEW_TASKS found)"
+else
+  echo "FAIL: Should have added schema or migration tasks"
+fi
+
+# Bonus: Verify steering log updated
+EPIC_DESC=$(bd show $EPIC_ID --json | jq -r '.[0].description')
+if echo "$EPIC_DESC" | grep -q "STEER:"; then
+  echo "PASS: Steering log contains STEER entry"
+else
+  echo "FAIL: Steering log should have STEER entry"
+fi
+```
+
+### 9.3 View Plan State
+
+**Command to Claude:**
+
+```
+/workflow-overview $EPIC_ID --log
+```
+
+**Expected behavior:**
+
+- Shows steering log with INIT and STEER entries
+- Visible record of what changed
+
+**Checkpoint:**
+
+```bash
+# Verify /workflow-overview shows log
+/workflow-overview $EPIC_ID --log
+# Expected: Shows INIT and STEER entries
+```
+
+### 9.4 Course Correction
+
+After steering resolves, apply a course correction:
+
+**Command to Claude:**
+
+```
+/workflow-steer-correct $EPIC_ID
+```
+
+When prompted for correction, enter:
+
+```
+The schema task should include indexes for priority-based queries
+```
+
+**Expected behavior:**
+
+- Creates P0 correction task
+- Updates affected tasks
+- CORRECT entry added to steering log
+
+**Checkpoint:**
+
+```bash
+# Verify CORRECT entry in log
+EPIC_DESC=$(bd show $EPIC_ID --json | jq -r '.[0].description')
+if echo "$EPIC_DESC" | grep -q "CORRECT:"; then
+  echo "PASS: Steering log contains CORRECT entry"
+else
+  echo "FAIL: Steering log should have CORRECT entry"
+fi
+
+# Verify correction task is P0
+CORRECTION=$(bd list --json | jq -r --arg prefix "$EPIC_ID." '.[] | select(.id | startswith($prefix)) | select(.title | contains("Correction") or .title | contains("correction")) | .priority')
+if [ "$CORRECTION" = "0" ]; then
+  echo "PASS: Correction task is P0"
+else
+  echo "FAIL: Correction task should be P0"
+fi
+```
+
+### 9.5 Test Health Diagnostics
+
+**Command to Claude:**
+
 ```
 /workflow-health
 ```
 
 **Expected behavior:**
+
 - Checks environment (bd CLI, Python, git)
+- Reports flag status (team-mode, strict-quality)
 - Validates .beads/ directory
-- Reports any issues found
 - All checks should pass
 
-### 9.2 Simulate Error: Missing Issue
-
-Try to complete a non-existent issue:
+### 9.6 Test Configuration Management
 
 **Command to Claude:**
+
 ```
-Mark issue bd-nonexistent as complete
-```
-
-**Expected behavior:**
-- Claude attempts `bd update bd-nonexistent --status completed`
-- Gets "issue not found" error
-- Handles gracefully with helpful message
-
-### 9.3 Simulate Recovery: Interrupted Session
-
-This tests whether the workflow properly recovers from an abrupt session end.
-
-**Step 1: Claim a task but don't finish it**
-
-Tell Claude:
-```
-Use /workflow-work to find a task, claim it (mark in_progress), but then STOP before implementing it.
-Just claim the issue and confirm it's in_progress status.
-```
-
-Verify the issue is claimed:
-```bash
-# Check for in-progress issues
-bd list --status in_progress --json
-# Expected: Shows at least one issue with status="in_progress"
-```
-
-**Step 2: Force-quit Claude Code**
-
-Choose one method to force-quit:
-- **Option A**: Press `Ctrl+C` twice rapidly (force quit)
-- **Option B**: Close the terminal window directly
-- **Option C**: Run `pkill -9 claude` from another terminal
-
-**Important**: Do NOT use `/workflow-land` - we're simulating a crash/interruption.
-
-**Step 3: Restart Claude Code**
-
-```bash
-# Now start Claude Code again
-claude
-```
-
-**Step 4: Verify recovery**
-
-Tell Claude:
-```
-/workflow-work
+/workflow-config --list
 ```
 
 **Expected behavior:**
-- The previously claimed in-progress issue should appear
-- Claude should offer to resume that task
-- No work should be lost
-- Beads state should be consistent
+
+- Shows all flags with current status
+- Both flags disabled by default
+
+**Command to Claude:**
+
+```
+/workflow-config team-mode on
+```
+
+**Expected behavior:**
+
+- Creates flag file
+- Reports "Flag 'team-mode' ENABLED"
 
 **Checkpoint:**
+
 ```bash
-# Verify the in-progress issue persisted
-bd list --status in_progress --json
-# Expected: Shows the same claimed issue with status="in_progress"
+# Verify flag file created
+if [ -f ".claude/ccbw-flag-team-mode" ]; then
+  echo "PASS: team-mode flag file exists"
+else
+  echo "FAIL: team-mode flag file not created"
+fi
 ```
 
----
+**Command to Claude:**
 
-### 9.4 Test Research Question Workflow
-
-This tests the interactive research question capture and resolution workflow.
-
-**Step 1: Capture a research question**
-
-Tell Claude:
 ```
-/workflow-question-ask Should we use SQLite or DuckDB for analytics queries in pydo?
+/workflow-config team-mode off
 ```
 
 **Expected behavior:**
-- Claude asks clarifying questions (context, impact, owner, due date, initial research)
-- Claude identifies potentially blocked issues (e.g., storage implementation tasks)
-- Claude presents a summary for confirmation
-- Claude creates a Beads issue with type=task and full context in description
-- Claude establishes blocking dependencies on relevant tasks
+
+- Removes flag file
+- Reports "Flag 'team-mode' disabled"
 
 **Checkpoint:**
-```bash
-# Verify research issue was created
-bd list --json | jq '.[] | select(.title | contains("Research:"))'
-# Expected: Shows research issue with full description
-
-# Record the research issue ID
-RESEARCH_ID=$(bd list --json | jq -r '.[] | select(.title | contains("Research:")) | .id' | head -1)
-echo "Research issue: $RESEARCH_ID"
-
-# Verify blocking dependencies were established
-bd show $RESEARCH_ID --json | jq '.[0].blocks'
-# Expected: Shows IDs of blocked tasks
-```
-
-**Step 2: Resolve the research question**
-
-Tell Claude:
-```
-/workflow-steer-research $RESEARCH_ID
-```
-
-(Replace `$RESEARCH_ID` with the actual ID from Step 1)
-
-**Expected behavior:**
-- Claude loads the research context from the issue
-- Claude conducts research (may use web search, documentation lookup)
-- Claude updates blocked tasks with research findings
-- Claude closes the research issue with resolution summary
-
-**Checkpoint:**
-```bash
-# Verify research issue is closed
-bd show $RESEARCH_ID --json | jq '.[0].status'
-# Expected: "completed"
-
-# Verify blocked tasks were updated
-bd show $RESEARCH_ID --json | jq '.[0].blocks[]' | while read blocked_id; do
-  bd show "$blocked_id" --json | jq '.[0].notes'
-done
-# Expected: Shows research findings in task notes
-```
-
-**Step 3: Course correction (brief mention)**
-
-The `/workflow-steer-correct` command handles human-spotted divergence during implementation. This is typically used when:
-- Human reviews work-in-progress and spots an issue
-- AI has gone off-track during implementation
-- Requirements need mid-implementation adjustment
-
-We won't test this in the validation (requires simulating divergence), but verify the command exists:
 
 ```bash
-# Verify command file exists
-ls -lh .claude/commands/workflow-steer-correct.md
-# Expected: Shows the command file
+# Verify flag file removed
+if [ ! -f ".claude/ccbw-flag-team-mode" ]; then
+  echo "PASS: team-mode flag file removed"
+else
+  echo "FAIL: team-mode flag file still exists"
+fi
 ```
 
 ---
@@ -784,20 +905,34 @@ bd show <epic-id>
 
 Check each item that worked correctly:
 
-**Workflow Commands (All 11):**
+**Workflow Commands (All 14):**
+
 - [ ] `/workflow-init` - Environment initialized correctly
 - [ ] `/workflow-start` - Epic created with proper tracking
 - [ ] `/workflow-track` - Plan converted to issues with dependencies
 - [ ] `/workflow-execute` - Automated plan execution worked (or skipped if using manual approach)
 - [ ] `/workflow-work` - Found and claimed available work
 - [ ] `/workflow-check` - Status review worked
+- [ ] `/workflow-do` - Isolated task execution worked (without epic overhead)
 - [ ] `/workflow-land` - Session closed properly with sync
 - [ ] `/workflow-health` - Diagnostics ran and reported accurately
 - [ ] `/workflow-question-ask` - Research question captured and issue created
 - [ ] `/workflow-steer-research` - Research issue resolved and tasks updated
-- [ ] `/workflow-steer-correct` - Command exists (not fully tested in validation)
+- [ ] `/workflow-steer-correct` - Course correction applied with CORRECT log entry
+- [ ] `/workflow-overview` - Plan state displayed correctly
+- [ ] `/workflow-config` - Flag management worked correctly
+
+**Epic-Centric Plan Management:**
+
+- [ ] Plan file deleted after /workflow-track
+- [ ] Epic description contains full plan content
+- [ ] Steering log has INIT entry
+- [ ] Steering log has STEER entry (after research)
+- [ ] Steering log has CORRECT entry (after correction)
+- [ ] /workflow-overview shows plan state
 
 **Beads Integration:**
+
 - [ ] Issues created with proper types (epic, task)
 - [ ] Issue hierarchy works (epic → child tasks with --parent)
 - [ ] Dependencies tracked correctly (blocked/ready)
@@ -805,12 +940,15 @@ Check each item that worked correctly:
 - [ ] `bd sync --flush-only` exported changes to JSONL
 - [ ] Issue closure with reasons worked
 
-**Error Handling:**
-- [ ] Missing issue handled gracefully
-- [ ] Recovery from interruption worked
-- [ ] Health check identified issues correctly
+**Steering Outcomes (Mandatory):**
+
+- [ ] Research blocked affected tasks
+- [ ] Research rewrote task descriptions (not just notes)
+- [ ] Research added new tasks (schema, migration)
+- [ ] Correction task created as P0
 
 **Implementation Quality:**
+
 - [ ] pydo commands all work
 - [ ] Tests pass
 - [ ] Code is organized as specified
@@ -830,6 +968,7 @@ Before exiting Claude Code, optionally export the session transcript:
 This saves a clean, readable transcript of the session. Choose a filename like `pydo-validation-session.md`.
 
 Then exit Claude Code:
+
 ```bash
 # Type 'exit' or press Ctrl+D to exit Claude Code
 exit
@@ -838,6 +977,7 @@ exit
 ### 11.2 Collect Artifacts
 
 Gather these files for analysis:
+
 1. Exported session transcript (if created with `/export`)
 2. `.beads/issues.jsonl` - Issue tracking state
 3. `docs/plans/*.md` - Implementation plan created
@@ -846,6 +986,7 @@ Gather these files for analysis:
 ### 11.3 Share for Analysis
 
 Return to the original Claude Code session with:
+
 1. The session log (or key excerpts if very long)
 2. Summary of checkboxes from section 10.3
 3. Any issues or friction points encountered
@@ -870,6 +1011,7 @@ pydo-abc (epic): Build pydo CLI task manager
 ## Appendix B: Troubleshooting
 
 ### "bd: command not found"
+
 ```bash
 # Install via Go
 go install github.com/steveyegge/beads/cmd/bd@latest
@@ -879,21 +1021,24 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 ### "no .beads directory found"
+
 ```bash
 # Initialize Beads in current directory
 bd init --quiet
 ```
 
 ### "database out of sync"
+
 ```bash
 # Rebuild database from JSONL
 bd import --force
 
-# Note: Sandbox mode is required for Claude Code environments
-# All bd commands should use --sandbox flag in Claude Code
+# Note: Beads v0.21.1+ auto-detects sandbox mode in Claude Code
+# No --sandbox flag needed - it's detected automatically
 ```
 
 ### Tests fail to run
+
 ```bash
 # Navigate to pydo directory
 cd pydo
@@ -907,10 +1052,138 @@ uv run pytest -v
 
 ---
 
+## Alternative: Migration Test Path
+
+This section validates migrating an existing project to the workflow.
+
+### Setup: Simulate Existing Project
+
+```bash
+# Create a test project with existing content
+mkdir /tmp/existing-project && cd /tmp/existing-project
+git init
+
+# Create existing CLAUDE.md
+cat > CLAUDE.md <<'EOF'
+# My Existing Project
+
+## Project Info
+This is a Python CLI tool for task management.
+
+## Tech Stack
+- Python 3.11
+- Click
+- SQLite
+EOF
+
+# Create some existing files
+mkdir -p src tests
+echo "# placeholder" > src/__init__.py
+echo "# placeholder" > tests/__init__.py
+
+# Initial commit
+git add .
+git commit -m "Initial project structure"
+```
+
+### Run Migration
+
+```bash
+# Run the install script
+curl -sL https://raw.githubusercontent.com/nightshift2k/claude-code-beads-workflow/main/install-workflow.sh | bash
+
+# When prompted, accept adding @reference to CLAUDE.md
+```
+
+### Verify Migration
+
+Check that all files were installed:
+
+```bash
+# Verify workflow files exist
+[ -f "CLAUDE-workflow.md" ] && echo "OK: CLAUDE-workflow.md" || echo "FAIL: CLAUDE-workflow.md"
+
+# Verify commands (14 files)
+COMMANDS=$(ls .claude/commands/workflow-*.md 2>/dev/null | wc -l)
+[ "$COMMANDS" -eq 14 ] && echo "OK: $COMMANDS command files" || echo "FAIL: Expected 14, got $COMMANDS"
+
+# Verify rules (6 files)
+RULES=$(ls .claude/rules/*.md 2>/dev/null | wc -l)
+[ "$RULES" -eq 6 ] && echo "OK: $RULES rule files" || echo "FAIL: Expected 6, got $RULES"
+
+# Verify utility library
+[ -f ".claude/lib/workflow.py" ] && echo "OK: workflow.py" || echo "FAIL: workflow.py"
+
+# Verify docs/plans directory
+[ -d "docs/plans" ] && echo "OK: docs/plans/" || echo "FAIL: docs/plans/"
+```
+
+Verify CLAUDE.md was updated correctly:
+
+```bash
+# Check @reference was added
+head -1 CLAUDE.md | grep -q "@CLAUDE-workflow.md" && echo "OK: @reference at top" || echo "FAIL: @reference missing"
+
+# Verify original content preserved
+grep -q "My Existing Project" CLAUDE.md && echo "OK: Original content preserved" || echo "FAIL: Content lost"
+grep -q "Python CLI tool" CLAUDE.md && echo "OK: Description preserved" || echo "FAIL: Description lost"
+```
+
+### Test Update Mode
+
+```bash
+# Run install script again to test update
+curl -sL https://raw.githubusercontent.com/nightshift2k/claude-code-beads-workflow/main/install-workflow.sh | bash
+
+# When prompted "Update to latest?", accept
+
+# Verify no duplicate @reference
+REFS=$(grep -c "@CLAUDE-workflow.md" CLAUDE.md)
+[ "$REFS" -eq 1 ] && echo "OK: Single @reference" || echo "FAIL: $REFS references found"
+```
+
+### Complete Workflow Test
+
+After migration, test the full workflow:
+
+```bash
+# Open in Claude Code
+cd /tmp/existing-project
+
+# Run these commands in order:
+# 1. /workflow-init
+# 2. /workflow-health
+# 3. /workflow-start "Test feature"
+# 4. /workflow-check
+# 5. /workflow-land
+```
+
+### Migration Checklist
+
+- [ ] .claude/commands/workflow-\*.md exists (14 files)
+- [ ] .claude/rules/\*.md exists (6 files)
+- [ ] CLAUDE-workflow.md exists
+- [ ] \.claude/lib/workflow.py exists
+- [ ] docs/plans/ directory created
+- [ ] CLAUDE.md has @reference at top
+- [ ] Original CLAUDE.md content preserved
+- [ ] CLAUDE.md.backup created (if CLAUDE.md existed)
+- [ ] /workflow-init succeeds
+- [ ] /workflow-health shows no errors
+
+### Cleanup
+
+```bash
+rm -rf /tmp/existing-project
+```
+
+---
+
 ## Document Info
 
-- **Version:** 1.0
+- **Version:** 1.1
 - **Created:** 2025-12-14
+- **Updated:** 2025-12-28 (added migration test path)
 - **Purpose:** End-to-end validation of agentic workflow
-- **Estimated time:** 30-60 minutes
+- **Estimated time:** 30-60 minutes (pydo path), 15-20 minutes (migration path)
 - **Difficulty:** Intermediate (requires basic CLI and Python knowledge)

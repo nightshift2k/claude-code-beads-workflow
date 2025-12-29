@@ -1,0 +1,10 @@
+# claude-code-beads-workflow: Documentation/workflow framework
+# No traditional source code - focus on user docs and changelog
+
+[categories]
+user = ["README.md", "QUICKSTART.md"]
+changelog = ["CHANGELOG.md"]
+
+[skip]
+# These categories don't apply to this project
+categories = ["api", "config", "contributor"]

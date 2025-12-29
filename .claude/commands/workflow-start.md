@@ -3,155 +3,140 @@ argument-hint: "[feature-description]"
 description: Begin a new feature with Beads epic creation
 ---
 
-## `/workflow-start` - Begin a new feature
+## Intent
 
-Use this command when starting a new feature or capability.
+Create a Beads epic as the parent container for a new feature.
 
-This command creates a Beads epic to track the entire feature lifecycle.
+## When to Use
 
-### Environment Validation
+- Starting a new feature
+- Beginning work spanning multiple tasks
+- Creating a tracking container for planned work
 
-**FIRST:** Run environment precheck before proceeding:
+## When NOT to Use
+
+- Quick isolated task → use `/workflow-do`
+- Adding to existing feature → use existing epic ID with `/workflow-track`
+- Just checking status → use `/workflow-check`
+
+## Context Required
+
+Run environment precheck first:
+
 ```bash
-uv run python _claude/lib/workflow.py precheck --name workflow-start
+uv run python .claude/lib/workflow.py precheck --name workflow-start
 ```
 
-If precheck fails, follow the guidance to resolve environment issues before continuing.
+## Decision Framework
 
-### Validate Feature Description
+| State                        | Action                             | Outcome                    |
+| ---------------------------- | ---------------------------------- | -------------------------- |
+| Feature description provided | Create epic                        | Epic ID returned           |
+| No description               | Prompt user for description        | Clear scope                |
+| Related epic exists          | Ask: extend existing or create new | Prevent duplicates         |
+| Epic just created            | Create feature branch              | `feature/<epic-id>-<slug>` |
+| Branch already exists        | Warn, offer switch                 | Use existing branch        |
 
-```bash
-FEATURE_DESC="$1"
+## Execution
 
-if [ -z "$FEATURE_DESC" ]; then
-  echo "ERROR: Usage: /workflow-start [feature-description]"
-  echo ""
-  echo "   Example: /workflow-start User authentication system"
-  exit 1
-fi
+1. Validate feature description provided
+2. Create epic with `bd create` (type: epic, priority: 1)
+3. Extract and prominently display epic ID
+4. Generate branch slug from title (lowercase, hyphenated, max 30 chars)
+5. Create and checkout feature branch: `feature/<epic-id>-<slug>`
+6. Instruct user to save ID for `/workflow-track`
 
-echo "Starting new feature: $FEATURE_DESC"
-echo ""
+## Success Criteria
+
+- [ ] Epic created with valid ID (format: `prefix-xxx`)
+- [ ] Epic ID clearly displayed to user
+- [ ] Feature branch created and checked out
+- [ ] Branch name embeds epic ID (extractable via regex)
+- [ ] User instructed to save ID for tracking phase
+
+## Epic ID Output (CRITICAL)
+
+The epic ID (e.g., `pydo-abc`) enables hierarchical child issues.
+
+| Without Epic ID                                | With Epic ID                                 |
+| ---------------------------------------------- | -------------------------------------------- |
+| Random independent IDs: `pydo-xyz`, `pydo-def` | Hierarchical IDs: `pydo-abc.1`, `pydo-abc.2` |
+| No visible relationship                        | Clear parent-child structure                 |
+
+**Always display prominently:**
+
 ```
-
----
-
-### Process
-
-**1. Epic Creation**: Create a feature epic in Beads
-
-**Step 1a:** Create the epic (run this first):
-```bash
-bd --sandbox create "$FEATURE_DESC" --description="Feature epic: $FEATURE_DESC" -t epic -p 1 --json
-```
-
-**Step 1b:** Extract the epic ID from the JSON output above:
-```bash
-# bd create returns an object like {"id": "pydo-abc", ...}
-# (Note: other commands like bd show/list return arrays)
-EPIC_ID="<paste-id-from-output>"
-echo ""
-echo "=========================================="
-echo "EPIC CREATED: $EPIC_ID"
-echo "=========================================="
-echo ""
-echo "IMPORTANT: Save this epic ID for /workflow-track"
-```
-
-**2. Verify Prefix** (if needed): If you didn't run `/workflow-init` first, verify the prefix is ≤8 characters by checking the issue ID format in the output above. If too long, run:
-```bash
-bd rename-prefix <short>- --dry-run   # Preview
-bd rename-prefix <short>-             # Apply
-```
-
-**3. Context Linking**: Optionally link to any planning documents or specifications
-   - Note any related documentation in the epic description
-   - Reference project specifications if available
-
-**4. Hierarchy Setup**: The epic serves as parent for all feature work
-   - All related tasks should use `--parent $EPIC_ID --force`
-   - This creates hierarchical IDs like `pydo-abc.1`, `pydo-abc.2`
-
----
-
-### Result
-
-- A new Beads epic with ID (e.g., `pydo-abc`)
-- Proper tracking hierarchy for the entire feature
-- Foundation for breaking down work into child issues with `.1`, `.2` suffixes
-
-<epic_output_critical>
-**CRITICAL: Note the epic ID in the output!**
-
-The epic ID (e.g., `pydo-abc`) is required for `/workflow-track` to create
-child issues with hierarchical IDs. Without it, tasks get random independent IDs.
-
-Example output:
-```
-{
-  "id": "pydo-abc",
-  "title": "Build pydo CLI",
-  ...
-}
-
 ==========================================
-EPIC CREATED: pydo-abc
+EPIC CREATED: [epic-id]
 ==========================================
 
 IMPORTANT: Save this epic ID for /workflow-track
 ```
 
-Use this ID when running `/workflow-track`:
-- Pass to `--parent pydo-abc --force` for each child issue
-- Results in clean IDs: `pydo-abc.1`, `pydo-abc.2`, `pydo-abc.3`
-</epic_output_critical>
+## Edge Considerations
 
----
+- **bd create returns object**: Use `.id` not `.[0].id` (see beads-patterns.md)
+- **Brainstorming gate**: For features touching >3 files, recommend brainstorming first
+- **Existing branch**: If branch already exists, prompt for suffix or offer to switch
+- **Special characters**: Sanitize title to `[a-z0-9-]` only for slug
+- **Long titles**: Truncate slug at 30 characters
 
-### Before Using This Command, Ensure
+## Brainstorming Gate
 
-- Beads has been initialized with short prefix (`bd init -p <short>-`)
-- You understand the project principles in @.claude/rules/001-project-principles.md
-- You have a clear understanding of the feature scope
+For complex features, brainstorm before coding:
 
-### After Using This Command, Continue With
+| Complexity    | Recommendation                     |
+| ------------- | ---------------------------------- |
+| ≤3 files      | Proceed directly                   |
+| >3 files      | Use `superpowers:brainstorm` first |
+| Unclear scope | Brainstorm to clarify requirements |
 
-1. **Save the epic ID** from the output (e.g., `pydo-abc`)
-2. Create detailed implementation plan (using writing-plans skill)
-3. Use `/workflow-track [plan-path]` to set up Beads tracking
-   - Use the epic ID with `--parent $EPIC_ID --force` for hierarchical child IDs
-4. Use `/workflow-execute` to execute the plan with tracking
+## Next Steps After Epic Creation
 
-### Recommended: Brainstorming Gate
+1. Save the epic ID (e.g., `pydo-abc`)
+2. Create implementation plan (using writing-plans skill)
+3. Track plan: `/workflow-track [plan-path]`
+4. Execute: `/workflow-execute` or `/workflow-work`
 
-For features touching more than 3 files, consider using the brainstorming skill first:
-- Define the problem statement clearly
-- Explore data models and dependencies
-- Make technology decisions with rationale documented
-- Create design document before implementation
+## Reference Commands
 
-### Troubleshooting
-
-**If epic creation fails:**
 ```bash
-# Run quick diagnostics
+# Environment precheck
+uv run python .claude/lib/workflow.py precheck --name workflow-start
+
+# Create epic (returns OBJECT, not array)
+bd create "Feature description" --description="Feature epic: description" -t epic -p 1 --json
+# Output: {"id": "pydo-abc", ...}
+# Extract: jq -r '.id'
+
+# Generate slug from title (lowercase, hyphenated, max 30 chars)
+TITLE="User Authentication Flow"
+SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g' | cut -c1-30)
+# Result: user-authentication-flow
+
+# Create feature branch with embedded epic ID
+EPIC_ID="pydo-abc"
+BRANCH="feature/${EPIC_ID}-${SLUG}"
+git checkout -b "$BRANCH"
+# Result: feature/pydo-abc-user-authentication-flow
+
+# Extract epic ID from branch name (regex pattern)
+# Pattern: feature/([a-z]+-[a-z0-9]+)-
+
+# Child issues use --parent --force for hierarchical IDs
+bd create "Task 1" --parent pydo-abc --force -t task -p 2 --json
+# Output: {"id": "pydo-abc.1", ...}
+
+# Fix long prefix
+bd rename-prefix short- --dry-run
+bd rename-prefix short-
 ```
 
-See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.
+## Related Files
 
-**If prefix is too long:**
-```bash
-bd rename-prefix <short>- --dry-run   # Preview
-bd rename-prefix <short>-             # Apply
-```
-
-**Example usage:**
-```
-/workflow-start User authentication system
-
-# Output includes:
-# EPIC CREATED: auth-abc
-# Save this ID for /workflow-track
-```
-
-This will create a Beads epic that properly tracks the entire feature with a clean, short ID.
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/ai-native-instructions.md - Execution principles
+- @.claude/rules/beads-patterns.md - bd create returns object
+- @.claude/rules/project-principles.md - Brainstorming gate
+- @.claude/commands/workflow-track.md - Track implementation plan
+- @.claude/commands/workflow-work.md - Find available work

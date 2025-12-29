@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'C=$(git status --porcelain 2>/dev/null | wc -l | tr -d \" \"); [ \"$C\" -gt 10 ] && echo \"⚠️ COMMIT CHECKPOINT: $C uncommitted files. Commit before proceeding.\" || true'",
+            "statusMessage": "Checking uncommitted files..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'command -v bd >/dev/null || exit 0; [ -d \"${CLAUDE_PROJECT_DIR:-.}/.beads\" ] || exit 0; CMD=$(echo \"$TOOL_INPUT\" | jq -r .command 2>/dev/null) || exit 0; if [[ \"$CMD\" =~ bd[[:space:]]+(update|create).*--(description|body|body-file) ]]; then echo \"<system-reminder>BEADS PLAN MODIFICATION DETECTED - Document changes via /workflow-steer-correct or update epic steering log. Skip for: status updates, wording fixes, notes.</system-reminder>\"; fi'",
+            "statusMessage": "Checking for plan modifications..."
+          }
+        ]
+      }
+    ]
+  }
+}

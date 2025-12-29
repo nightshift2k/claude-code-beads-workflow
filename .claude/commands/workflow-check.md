@@ -3,112 +3,100 @@ argument-hint:
 description: Review current project status across implementation and tracking
 ---
 
-## `/workflow-check` - Review project status
+## Intent
 
-Use this command when needing to understand current project state.
+Show project state: epics, issues, and work availability.
 
-This command provides a comprehensive view of implementation status and tracking.
+## When to Use
 
-### Environment Validation
+- Before starting new work
+- Identifying work needing attention
+- Assessing project health and progress
+- Finding the next work item
 
-**FIRST:** Run environment precheck before proceeding:
+## When NOT to Use
+
+- For diagnostic issues → use `/workflow-health`
+- To claim work → use `/workflow-work`
+- To view specific plan → use `/workflow-overview [epic-id]`
+
+## Context Required
+
+Run environment precheck first:
+
 ```bash
-uv run python _claude/lib/workflow.py precheck --name workflow-check
+uv run python .claude/lib/workflow.py precheck --name workflow-check
 ```
 
-If precheck fails, follow the guidance to resolve environment issues before continuing.
+## Decision Framework
 
----
+| Query            | What It Shows                 | When Useful              |
+| ---------------- | ----------------------------- | ------------------------ |
+| Active epics     | Feature containers and status | Understanding scope      |
+| Open issues      | All work not yet closed       | Full backlog view        |
+| Ready work       | Unblocked, claimable issues   | Finding next task        |
+| Stale issues     | Untouched 7+ days             | Detecting forgotten work |
+| Blocked issues   | Waiting on dependencies       | Identifying bottlenecks  |
+| Dependency graph | Visual DAG of relationships   | Understanding flow       |
+| Pinned issues    | Persistent reference items    | Excluded from ready      |
 
-### Process
+## Execution
 
-**1. Active Features**: Review Beads epics and their status
+1. Run precheck to validate environment
+2. Query each category relevant to need
+3. Summarize findings with counts and highlights
+4. Recommend next actions based on state
+
+## Success Criteria
+
+- [ ] Environment validated
+- [ ] Active epics listed with status
+- [ ] Open/ready/stale/blocked counts reported
+- [ ] Actionable recommendations provided
+
+## Edge Considerations
+
+- **Precheck failure**: Follow guidance before continuing.
+- **Empty results**: May indicate healthy state (no stale/blocked).
+- **Many stale issues**: Session may have been interrupted.
+
+## Reference Commands
+
 ```bash
-uv run python _claude/lib/workflow.py list --json
-# Filter for type=epic in output
+# Environment precheck
+uv run python .claude/lib/workflow.py precheck --name workflow-check
+
+# Active epics
+bd list --type epic --json
+
+# Open issues
+bd list --status open --json
+
+# Ready work
+bd ready --json
+
+# Stale issues (7+ days)
+bd stale --days 7 --json
+
+# Blocked issues
+bd blocked --json
+
+# Dependency visualization (requires issue-id)
+bd graph [issue-id]         # Dependency graph for specific issue
+bd dep tree [issue-id]      # Dependency tree for specific issue
+
+# Orphaned issues (no parent)
+bd orphans
+
+# Epic progress via child status (native filter)
+bd list --parent $EPIC_ID --status closed --json | jq '. | length'  # Completed
+bd list --parent $EPIC_ID --status open --json | jq '. | length'    # Remaining
 ```
 
-**2. Open Issues**: Check open issues by status
-```bash
-uv run python _claude/lib/workflow.py list --status open --json
-```
+## Related Files
 
-**3. Ready Work**: Find unblocked work available
-```bash
-uv run python _claude/lib/workflow.py ready --json
-```
-
-**4. Stale Issues**: Identify forgotten work (7+ days old)
-```bash
-bd --sandbox stale --days 7 --json
-```
-
-**5. Blocked Issues**: Check for dependency blocks
-```bash
-uv run python _claude/lib/workflow.py list --blocked --json
-```
-
-**6. Dependency Visualization**: View dependency graph
-```bash
-# ASCII DAG showing all dependencies
-bd --sandbox graph
-
-# Dependency tree for specific issue
-bd --sandbox dep tree [issue-id]
-```
-
-**7. Pinned Issues**: View persistent reference issues
-```bash
-# List pinned issues (persistent, excluded from bd ready)
-bd --sandbox list --pinned --json
-```
-
-**8. Project Statistics**: Review overall progress
-```bash
-# Count by status
-uv run python _claude/lib/workflow.py list --status open --json
-uv run python _claude/lib/workflow.py list --status closed --json
-```
-
----
-
-### Information Summary
-
-- Active feature epics and their completion status
-- Open Beads issues by priority and type
-- Ready work available for immediate implementation
-- Stale issues that may need attention
-- Blocked issues that need dependency resolution
-- Dependency graph visualization (ASCII DAG)
-- Pinned reference issues
-- Overall project statistics and progress
-
-### Use This Command To
-
-- Understand current project state before starting new work
-- Identify work that needs attention
-- Find appropriate work to focus on next
-- Assess overall project health and progress
-- Detect stale or blocked work items
-
-### Troubleshooting
-
-**If status retrieval fails:**
-```bash
-# Run quick diagnostics
-```
-
-See @CLAUDE.md for comprehensive troubleshooting, or run `/workflow-health` for full diagnostics.
-
-**Example usage:**
-```
-/workflow-check
-# This will provide a comprehensive status report across implementation and tracking
-```
-
-**What you'll see:**
-- List of active feature epics
-- Count of open issues by priority
-- List of ready work (unblocked issues)
-- Any stale issues that may need attention
-- Overall project statistics
+- @CLAUDE.md - Main workflow instructions
+- @.claude/rules/ai-native-instructions.md - Execution principles
+- @.claude/rules/beads-patterns.md - Beads CLI patterns
+- @.claude/commands/workflow-work.md - Find available work
+- @.claude/commands/workflow-health.md - System diagnostics
