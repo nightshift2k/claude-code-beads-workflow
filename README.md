@@ -215,43 +215,48 @@ See [CLAUDE-workflow-migration.md](CLAUDE-workflow-migration.md) for detailed mi
 
 ## 🔄 Workflow Lifecycle
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      AGENTIC WORKFLOW LIFECYCLE                     │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph SETUP
+        A["/workflow-init"]
+    end
 
-   SETUP              PLANNING              TRACKING            EXECUTION
-     │                   │                     │                    │
-     ▼                   ▼                     ▼                    ▼
-/workflow-init  →  /workflow-start  →  /workflow-track  →  /workflow-execute
-                   (create epic)       (plan → issues)      (run full plan)
-                        │                                          │
-                        ▼                                    OR    ▼
-                   brainstorm +                           /workflow-work ◄──┐
-                   writing-plans                          (task by task)    │
-                                                                │           │
-                        MONITORING & STEERING                   │           │
-                              │                                 │           │
-            /workflow-check (status)                            │           │
-            /workflow-health (diagnostics)                      │           │
-            /workflow-overview (plan views)                     │           │
-            /workflow-question-ask (research)                   │           │
-            /workflow-steer-research (apply findings)           │           │
-            /workflow-steer-correct (course correct)            │           │
-            /workflow-do (quick isolated task)                  │           │
-                                                                │           │
-                                         SESSION END            │           │
-                                              │                 │           │
-                                              ▼                 │           │
-                                       /workflow-land ◄─────────┘           │
-                                              │                             │
-                              ┌───────────────┴───────────────┐             │
-                              │                               │             │
-                        epic complete?                  epic incomplete     │
-                              │                               │             │
-                              ▼                               └─────────────┘
-                       merge/PR + done                   (stay on branch,
-                                                          next session)
+    subgraph PLANNING
+        B["/workflow-start<br/><i>create epic + branch</i>"]
+        B --> B1["brainstorm +<br/>writing-plans"]
+    end
+
+    subgraph TRACKING
+        C["/workflow-track<br/><i>plan → issues</i>"]
+    end
+
+    subgraph EXECUTION
+        D["/workflow-execute<br/><i>run full plan</i>"]
+        E["/workflow-work<br/><i>task by task</i>"]
+        D -. OR .-> E
+    end
+
+    A --> B
+    B1 --> C
+    C --> D
+
+    subgraph MONITORING["MONITORING & STEERING"]
+        M1["/workflow-check"]
+        M2["/workflow-health"]
+        M3["/workflow-overview"]
+        M4["/workflow-question-ask"]
+        M5["/workflow-steer-research"]
+        M6["/workflow-steer-correct"]
+        M7["/workflow-do"]
+    end
+
+    E --> L["/workflow-land<br/><i>session end</i>"]
+    D --> L
+
+    L --> decision{epic complete?}
+    decision -->|yes| done["✅ merge/PR + done"]
+    decision -->|no| stay["stay on branch"]
+    stay --> E
 ```
 
 ---
