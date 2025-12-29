@@ -11,7 +11,7 @@ set -euo pipefail
 
 # Configuration
 REPO_URL="https://raw.githubusercontent.com/nightshift2k/claude-code-beads-workflow/main"
-WORKFLOW_VERSION="0.1.0"
+WORKFLOW_VERSION="0.2.0"
 
 # Colors for output (disabled if not a terminal)
 if [[ -t 1 ]]; then

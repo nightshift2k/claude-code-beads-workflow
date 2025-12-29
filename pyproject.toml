@@ -1,6 +1,6 @@
 [project]
 name = "claude-code-beads-workflow"
-version = "0.1.0"
+version = "0.2.0"
 description = "Template for agentic AI development using Beads issue tracking"
 requires-python = ">=3.10"
 

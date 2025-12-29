@@ -443,7 +443,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         prog="workflow", description="Agentic workflow utilities for Claude Code"
     )
-    parser.add_argument("--version", action="version", version="0.1.0")
+    parser.add_argument("--version", action="version", version="0.2.0")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 

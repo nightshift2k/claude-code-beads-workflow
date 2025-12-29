@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.1.0-green.svg" alt="Version"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.2.0-green.svg" alt="Version"></a>
   <a href="https://github.com/steveyegge/beads"><img src="https://img.shields.io/badge/Beads_CLI-v0.37.0+-purple.svg" alt="Beads CLI"></a>
   <a href="https://github.com/nightshift2k/claude-code-beads-workflow/stargazers"><img src="https://img.shields.io/github/stars/nightshift2k/claude-code-beads-workflow?style=social" alt="GitHub Stars"></a>
   <a href="https://github.com/nightshift2k/claude-code-beads-workflow/issues"><img src="https://img.shields.io/github/issues/nightshift2k/claude-code-beads-workflow" alt="GitHub Issues"></a>
