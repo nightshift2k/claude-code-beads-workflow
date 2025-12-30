@@ -171,9 +171,12 @@ download_workflow_files() {
     mkdir -p .claude/lib
     mkdir -p docs/plans
 
-    # Download CLAUDE-workflow.md
-    echo "Downloading main workflow file..."
+    # Download root documentation files
+    echo "Downloading main workflow files..."
     if ! download_file "$REPO_URL/CLAUDE-workflow.md" "CLAUDE-workflow.md"; then
+        ((failed++))
+    fi
+    if ! download_file "$REPO_URL/TROUBLESHOOTING.md" "TROUBLESHOOTING.md"; then
         ((failed++))
     fi
 
@@ -196,6 +199,12 @@ download_workflow_files() {
     # Download workflow.py
     echo "Downloading utility library..."
     if ! download_file "$REPO_URL/.claude/lib/workflow.py" ".claude/lib/workflow.py"; then
+        ((failed++))
+    fi
+
+    # Download reference documentation
+    echo "Downloading reference docs..."
+    if ! download_file "$REPO_URL/docs/beads-reference.md" "docs/beads-reference.md"; then
         ((failed++))
     fi
 
@@ -264,9 +273,11 @@ report_installation() {
     echo ""
     echo "Installed files:"
     echo "  CLAUDE-workflow.md          - Workflow instructions"
+    echo "  TROUBLESHOOTING.md          - Error recovery guide"
     echo "  .claude/commands/           - 14 workflow commands"
     echo "  .claude/rules/              - 6 rule files"
     echo "  .claude/lib/workflow.py     - Utility library"
+    echo "  docs/beads-reference.md     - Beads CLI reference"
     echo "  docs/plans/                 - Directory for implementation plans"
     echo ""
 }

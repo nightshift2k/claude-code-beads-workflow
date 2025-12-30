@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+**Documentation**
+
+- Extracted troubleshooting to dedicated `TROUBLESHOOTING.md` (~400 lines removed from CLAUDE-workflow.md)
+- Condensed `beads-patterns.md` to critical gotchas only (~75% token reduction)
+- Created `docs/beads-reference.md` for full Beads CLI reference (on-demand loading)
+
 ## [0.2.0] - 2025-12-29
 
 ### Added
